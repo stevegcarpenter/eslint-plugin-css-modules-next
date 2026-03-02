@@ -1,0 +1,21 @@
+#!/bin/sh
+
+# Pre-commit hook to run all checks
+# This script runs all validation checks before allowing a commit
+
+echo "🔍 Running pre-commit checks..."
+
+# Array of script names to execute
+scripts="check-branch.sh check-logs.sh check-eslint.sh check-prettier.sh"
+
+# Loop through and execute each script
+for script in $scripts; do
+  sh "$(dirname "$0")/$script"
+  if [ $? -ne 0 ]; then
+    exit 1
+  fi
+done
+
+# If all checks pass, allow the commit
+echo "✅ Pre-commit checks passed!"
+exit 0
