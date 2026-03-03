@@ -1,0 +1,14 @@
+.card {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.card .header {
+  font-weight: bold;
+  padding: 12px;
+}
+
+.card .body {
+  padding: 12px;
+  font-size: 14px;
+}

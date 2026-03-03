@@ -61,6 +61,8 @@ const rule: Rule.RuleModule = {
         if (!existsSync(cssFilePath)) return;
 
         const definedClasses = extractClassNames(cssFilePath);
+        if (!definedClasses) return; // unparsable CSS — skip to avoid false positives
+
         const accessedClass = node.property.name;
 
         if (!definedClasses.has(accessedClass)) {

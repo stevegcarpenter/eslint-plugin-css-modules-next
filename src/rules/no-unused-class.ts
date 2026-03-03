@@ -77,6 +77,7 @@ const rule: Rule.RuleModule = {
           if (!existsSync(absolutePath)) continue;
 
           const definedClasses = extractClassNames(absolutePath);
+          if (!definedClasses) continue; // unparsable CSS — skip to avoid false positives
           const used = accessedClasses.get(identifier) ?? new Set<string>();
 
           for (const className of definedClasses) {

@@ -60,5 +60,8 @@ lib
 # claude code
 .claude
 
+# Test fixture files — kept in their original form as-authored
+tests/files/**
+
 # docker ignore
 .dockerignore

@@ -74,4 +74,93 @@ describe('no-unused-class', () => {
       },
     ],
   });
+
+  // ── Nested classes ──────────────────────────────────────────────────────────
+  // card.module.css uses compound selectors: .card .header, .card .body
+  // The parser extracts every distinct class name from each selector, so
+  // .header and .body are tracked even though they appear nested under .card.
+
+  ruleTester.run('all nested classes (compound selector) are used', rule, {
+    valid: [
+      {
+        filename: fixtureFile,
+        code: `
+          import styles from './card.module.css';
+          const a = styles.card;
+          const b = styles.header;
+          const c = styles.body;
+        `,
+      },
+    ],
+    invalid: [],
+  });
+
+  ruleTester.run('unused nested class (compound selector) is reported', rule, {
+    valid: [],
+    invalid: [
+      // card.module.css defines .card, .header, .body via .card .header / .card .body rules.
+      // Only .card and .header are referenced — .body should be flagged.
+      {
+        filename: fixtureFile,
+        code: `
+          import styles from './card.module.css';
+          const a = styles.card;
+          const b = styles.header;
+        `,
+        errors: [
+          {
+            messageId: 'unusedClass',
+            data: {
+              className: 'body',
+              moduleFile: join(fixturesDir, 'card.module.css'),
+            },
+          },
+        ],
+      },
+    ],
+  });
+
+  // card.module.scss uses SCSS nesting: .card { .header { } .body { } }
+  // postcss-scss preserves each nested block as its own Rule node, so
+  // walkRules visits .header and .body independently.
+
+  ruleTester.run('all nested classes (SCSS nesting) are used', rule, {
+    valid: [
+      {
+        filename: fixtureFile,
+        code: `
+          import styles from './card.module.scss';
+          const a = styles.card;
+          const b = styles.header;
+          const c = styles.body;
+        `,
+      },
+    ],
+    invalid: [],
+  });
+
+  ruleTester.run('unused nested class (SCSS nesting) is reported', rule, {
+    valid: [],
+    invalid: [
+      // card.module.scss defines .card, .header (nested), .body (nested).
+      // Only .card and .header are referenced — .body should be flagged.
+      {
+        filename: fixtureFile,
+        code: `
+          import styles from './card.module.scss';
+          const a = styles.card;
+          const b = styles.header;
+        `,
+        errors: [
+          {
+            messageId: 'unusedClass',
+            data: {
+              className: 'body',
+              moduleFile: join(fixturesDir, 'card.module.scss'),
+            },
+          },
+        ],
+      },
+    ],
+  });
 });
