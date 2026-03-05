@@ -1,6 +1,6 @@
 {
   "name": "eslint-plugin-css-modules-next",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "ESLint plugin for CSS modules validation — catches undefined and unused CSS classes",
   "type": "module",
   "main": "dist/index.cjs",
@@ -13,7 +13,9 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "rimraf dist && node scripts/build.mjs && tsc --project tsconfig.build.json",
     "clean": "rimraf dist",
@@ -46,9 +48,18 @@
     "typescript-eslint": "latest",
     "vitest": "latest"
   },
-  "keywords": ["eslint", "eslint-plugin", "css-modules", "css", "scss", "less"],
+  "keywords": [
+    "eslint",
+    "eslint-plugin",
+    "css-modules",
+    "css",
+    "scss",
+    "less"
+  ],
   "license": "MIT",
   "pnpm": {
-    "onlyBuiltDependencies": ["esbuild"]
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   }
 }

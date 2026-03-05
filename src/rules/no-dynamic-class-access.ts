@@ -29,7 +29,7 @@ const rule: Rule.RuleModule = {
     },
     messages: {
       dynamicClassAccess:
-        'Avoid dynamic CSS class access via "{{objectName}}[...]". ' +
+        'Dynamic CSS class access via "{{objectName}}[...] is restricted.". ' +
         'Use named access ("{{objectName}}.className") or a switch statement ' +
         'to map values to specific class names.',
     },

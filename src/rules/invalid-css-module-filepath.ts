@@ -24,7 +24,7 @@ const rule: Rule.RuleModule = {
     },
     messages: {
       notColocated:
-        'CSS module "{{importPath}}" must be in the same directory as "{{sourceFile}}".',
+        'CSS module "{{importPath}}" must be in the same directory as "{{sourceFile}}" and have the same base name.',
       wrongBaseName:
         'CSS module "{{actualFile}}" should be named "{{expectedFile}}" to match "{{sourceFile}}".',
     },
