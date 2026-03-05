@@ -28,7 +28,7 @@ plugin.configs['recommended'] = {
     'css-modules-next/invalid-css-module-filepath': 'error',
     'css-modules-next/no-dynamic-class-access': 'error',
     'css-modules-next/no-undefined-class': 'error',
-    'css-modules-next/no-unused-class': 'warn',
+    'css-modules-next/no-unused-class': 'error',
   },
 };
 

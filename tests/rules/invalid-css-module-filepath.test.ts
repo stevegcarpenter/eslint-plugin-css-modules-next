@@ -24,10 +24,6 @@ describe('invalid-css-module-filepath', () => {
         filename: '/project/src/Button.tsx',
         code: `import styles from './Button.module.less';`,
       },
-      {
-        filename: '/project/src/Button.tsx',
-        code: `import styles from './Button.module.sass';`,
-      },
       // Plain .css (not *.module.*) — rule only applies to CSS modules
       {
         filename: '/project/src/Button.tsx',

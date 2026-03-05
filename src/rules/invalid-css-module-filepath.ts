@@ -3,7 +3,7 @@ import type { Rule } from 'eslint';
 import { resolveCssModulePath } from '../utils/css-parser';
 
 const SOURCE_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.jsx']);
-const CSS_MODULE_SUFFIX = /\.module\.(css|scss|sass|less)$/;
+const CSS_MODULE_SUFFIX = /\.module\.(css|scss|less)$/;
 
 /**
  * Enforces that a CSS module import is co-located with (same directory as) its

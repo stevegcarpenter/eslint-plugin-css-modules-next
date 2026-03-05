@@ -10,7 +10,7 @@ import { parse as parseScss } from 'postcss-scss';
  * Returns `null` when the content cannot be parsed (e.g. corrupt content), so
  * callers can skip reporting rather than producing false positives.
  *
- * Key behaviours:
+ * Key behaviors:
  * - `:global(.Foo)` selectors are stripped before matching — those names belong
  *   to the global scope and are not part of the CSS module's local interface.
  * - `:local(.foo)` is treated as a regular local class (it is one).
@@ -66,7 +66,7 @@ export function extractClassNames(filePath: string): Set<string> | null {
 
   let syntax: 'css' | 'scss' | 'less' = 'css';
   if (ext === '.less') syntax = 'less';
-  else if (ext === '.scss' || ext === '.sass') syntax = 'scss';
+  else if (ext === '.scss') syntax = 'scss';
 
   return parseClassNames(content, syntax);
 }
@@ -76,7 +76,7 @@ export function extractClassNames(filePath: string): Set<string> | null {
  * Returns null if the import is not a CSS module.
  */
 export function resolveCssModulePath(importPath: string): string | null {
-  if (/\.module\.(css|scss|sass|less)$/.test(importPath)) {
+  if (/\.module\.(css|scss|less)$/.test(importPath)) {
     return importPath;
   }
   return null;
