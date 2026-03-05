@@ -29,24 +29,9 @@
     "postinstall": "sh scripts/install-hooks.sh || true"
   },
   "dependencies": {
-    "postcss": "latest",
-    "postcss-less": "latest",
-    "postcss-scss": "latest"
-  },
-  "peerDependencies": {
-    "eslint": ">=9.0.0"
-  },
-  "devDependencies": {
-    "@eslint/js": "latest",
-    "@types/node": "latest",
-    "esbuild": "latest",
-    "eslint": "latest",
-    "prettier": "latest",
-    "rimraf": "latest",
-    "ts-node": "latest",
-    "typescript": "latest",
-    "typescript-eslint": "latest",
-    "vitest": "latest"
+    "postcss": "^8.5.8",
+    "postcss-less": "^6.0.0",
+    "postcss-scss": "^4.0.9"
   },
   "keywords": [
     "eslint",
@@ -61,5 +46,17 @@
     "onlyBuiltDependencies": [
       "esbuild"
     ]
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^25.3.3",
+    "esbuild": "^0.27.3",
+    "eslint": "^10.0.2",
+    "prettier": "^3.8.1",
+    "rimraf": "^6.1.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.56.1",
+    "vitest": "^4.0.18"
   }
 }
