@@ -80,7 +80,7 @@ export default [
 
 Errors are surfaced inline in your editor when using the ESLint Extension:
 
-![ESLint error example](images/error.webp)
+![ESLint error example](images/error.png)
 
 ### `css-modules-next/no-undefined-class`
 
