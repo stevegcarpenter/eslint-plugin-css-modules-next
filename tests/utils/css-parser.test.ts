@@ -861,4 +861,20 @@ describe('edge cases', () => {
     );
     expect(result).toEqual(new Set(['card', 'header', 'body']));
   });
+
+  // Regression: &:not(.selected) in SCSS — the class nested inside :not() must
+  // be extracted. The original eslint-plugin-css-modules had this bug.
+  it('extracts class referenced inside &:not() in SCSS (regression)', () => {
+    const result = parseClassNames(
+      css`
+        .root {
+          &:not(.selected) {
+            opacity: 0.5;
+          }
+        }
+      `,
+      'scss'
+    );
+    expect(result).toEqual(new Set(['root', 'selected']));
+  });
 });
