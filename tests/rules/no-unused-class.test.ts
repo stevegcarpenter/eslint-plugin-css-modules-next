@@ -46,6 +46,16 @@ describe('no-unused-class', () => {
           const c = styles.unused;
         `,
       },
+      // namespace import (import * as styles) — same behaviour
+      {
+        filename: fixtureFile,
+        code: `
+          import * as styles from './button.module.css';
+          const a = styles.container;
+          const b = styles.button;
+          const c = styles.unused;
+        `,
+      },
     ],
     invalid: [],
   });
@@ -59,6 +69,24 @@ describe('no-unused-class', () => {
         filename: fixtureFile,
         code: `
           import styles from './button.module.css';
+          const a = styles.container;
+          const b = styles.button;
+        `,
+        errors: [
+          {
+            messageId: 'unusedClass',
+            data: {
+              className: 'unused',
+              moduleFile: join(fixturesDir, 'button.module.css'),
+            },
+          },
+        ],
+      },
+      // same check via namespace import
+      {
+        filename: fixtureFile,
+        code: `
+          import * as styles from './button.module.css';
           const a = styles.container;
           const b = styles.button;
         `,

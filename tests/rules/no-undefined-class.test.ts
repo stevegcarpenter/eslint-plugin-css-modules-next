@@ -51,6 +51,15 @@ describe('no-undefined-class', () => {
           const b = styles.button;
         `,
       },
+      // namespace import (import * as styles) — same behaviour
+      {
+        filename: fixtureFile,
+        code: `
+          import * as styles from './button.module.css';
+          const a = styles.container;
+          const b = styles.button;
+        `,
+      },
     ],
     invalid: [],
   });
@@ -63,6 +72,23 @@ describe('no-undefined-class', () => {
         filename: fixtureFile,
         code: `
           import styles from './button.module.css';
+          const el = styles.ghost;
+        `,
+        errors: [
+          {
+            messageId: 'undefinedClass',
+            data: {
+              className: 'ghost',
+              moduleFile: join(fixturesDir, 'button.module.css'),
+            },
+          },
+        ],
+      },
+      // same check via namespace import
+      {
+        filename: fixtureFile,
+        code: `
+          import * as styles from './button.module.css';
           const el = styles.ghost;
         `,
         errors: [

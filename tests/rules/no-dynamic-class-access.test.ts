@@ -27,6 +27,10 @@ describe('no-dynamic-class-access', () => {
       {
         code: `import obj from './utils'; const el = obj[name];`,
       },
+      // Namespace import with dot notation — fine
+      {
+        code: `import * as styles from './Button.module.css'; const el = styles.container;`,
+      },
     ],
     invalid: [],
   });
@@ -37,6 +41,16 @@ describe('no-dynamic-class-access', () => {
       // Identifier (variable)
       {
         code: `import styles from './Button.module.css'; const el = styles[name];`,
+        errors: [
+          {
+            messageId: 'dynamicClassAccess',
+            data: { objectName: 'styles' },
+          },
+        ],
+      },
+      // Namespace import — dynamic access still flagged
+      {
+        code: `import * as styles from './Button.module.css'; const el = styles[name];`,
         errors: [
           {
             messageId: 'dynamicClassAccess',

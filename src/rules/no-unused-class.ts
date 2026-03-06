@@ -48,7 +48,10 @@ const rule: Rule.RuleModule = {
         const absoluteCssPath = resolve(currentFileDir, resolvedCssPath);
 
         for (const specifier of node.specifiers) {
-          if (specifier.type === 'ImportDefaultSpecifier') {
+          if (
+            specifier.type === 'ImportDefaultSpecifier' ||
+            specifier.type === 'ImportNamespaceSpecifier'
+          ) {
             cssModuleImports.set(specifier.local.name, {
               absolutePath: absoluteCssPath,
               importNode: node as unknown as Rule.Node,

@@ -45,7 +45,10 @@ const rule: Rule.RuleModule = {
         if (!resolveCssModulePath(importPath)) return;
 
         for (const specifier of node.specifiers) {
-          if (specifier.type === 'ImportDefaultSpecifier') {
+          if (
+            specifier.type === 'ImportDefaultSpecifier' ||
+            specifier.type === 'ImportNamespaceSpecifier'
+          ) {
             cssModuleImports.add(specifier.local.name);
           }
         }

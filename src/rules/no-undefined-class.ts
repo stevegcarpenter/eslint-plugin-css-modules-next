@@ -43,7 +43,10 @@ const rule: Rule.RuleModule = {
 
         // Only track the default import binding (e.g. `import styles from ...`)
         for (const specifier of node.specifiers) {
-          if (specifier.type === 'ImportDefaultSpecifier') {
+          if (
+            specifier.type === 'ImportDefaultSpecifier' ||
+            specifier.type === 'ImportNamespaceSpecifier'
+          ) {
             cssModuleImports.set(specifier.local.name, absoluteCssPath);
           }
         }
