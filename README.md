@@ -1,5 +1,7 @@
 # eslint-plugin-css-modules-next
 
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/stevegcarpenter/eslint-plugin-css-modules-next/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/stevegcarpenter/eslint-plugin-css-modules-next/tree/main)
+
 ESLint plugin for CSS Modules validation. Catches undefined and unused CSS classes, enforces co-location conventions, and disallows dynamic class access patterns that cannot be statically verified.
 
 Supports `.css`, `.scss`, and `.less` module files.
