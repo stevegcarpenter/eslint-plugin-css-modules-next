@@ -1,5 +1,6 @@
 import { RuleTester } from 'eslint';
 import { describe } from 'vitest';
+
 import rule from '../../src/rules/invalid-css-module-filepath';
 
 // RuleTester.run() creates its own describe/it blocks internally, so it must

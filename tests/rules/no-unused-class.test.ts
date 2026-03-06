@@ -2,6 +2,7 @@ import { RuleTester } from 'eslint';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { describe } from 'vitest';
+
 import rule from '../../src/rules/no-unused-class';
 
 const fixturesDir = join(

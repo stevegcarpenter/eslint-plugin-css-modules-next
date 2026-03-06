@@ -1,5 +1,6 @@
-import { basename, dirname, extname, resolve } from 'path';
 import type { Rule } from 'eslint';
+import { basename, dirname, extname, resolve } from 'path';
+
 import { resolveCssModulePath } from '../utils/css-parser';
 
 const SOURCE_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.jsx']);

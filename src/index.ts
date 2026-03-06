@@ -1,4 +1,5 @@
 import type { Rule } from 'eslint';
+
 import { version } from '../package.json';
 import { rules } from './rules/index';
 

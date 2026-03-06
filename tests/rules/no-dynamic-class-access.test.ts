@@ -1,5 +1,6 @@
 import { RuleTester } from 'eslint';
 import { describe } from 'vitest';
+
 import rule from '../../src/rules/no-dynamic-class-access';
 
 // RuleTester.run() creates its own describe/it blocks internally, so it must

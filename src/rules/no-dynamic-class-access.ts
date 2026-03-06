@@ -1,4 +1,5 @@
 import type { Rule } from 'eslint';
+
 import { resolveCssModulePath } from '../utils/css-parser';
 
 /**

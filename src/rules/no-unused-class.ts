@@ -1,6 +1,7 @@
+import type { Rule } from 'eslint';
 import { existsSync } from 'fs';
 import { dirname, resolve } from 'path';
-import type { Rule } from 'eslint';
+
 import { extractClassNames, resolveCssModulePath } from '../utils/css-parser';
 
 /**
