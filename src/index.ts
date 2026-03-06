@@ -1,4 +1,5 @@
 import type { Rule } from 'eslint';
+import { version } from '../package.json';
 import { rules } from './rules/index';
 
 interface PluginMeta {
@@ -15,7 +16,7 @@ interface Plugin {
 const plugin: Plugin = {
   meta: {
     name: 'eslint-plugin-css-modules-next',
-    version: '0.0.1',
+    version,
   },
   rules,
   configs: {},
