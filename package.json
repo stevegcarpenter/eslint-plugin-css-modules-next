@@ -1,0 +1,63 @@
+{
+  "name": "eslint-plugin-css-modules-next",
+  "version": "1.0.0",
+  "description": "ESLint plugin for CSS modules validation — catches undefined and unused CSS classes",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rimraf dist && node scripts/build.mjs && tsc --project tsconfig.build.json",
+    "clean": "rimraf dist",
+    "lint": "eslint src tests",
+    "lint:fix": "eslint src tests --fix",
+    "pretty:check": "prettier --check src tests",
+    "pretty:fix": "prettier --write src tests",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "type-check": "tsc --noEmit",
+    "postinstall": "sh scripts/install-hooks.sh || true"
+  },
+  "dependencies": {
+    "postcss": "^8.5.8",
+    "postcss-less": "^6.0.0",
+    "postcss-scss": "^4.0.9"
+  },
+  "keywords": [
+    "eslint",
+    "eslint-plugin",
+    "css-modules",
+    "css",
+    "scss",
+    "less"
+  ],
+  "license": "MIT",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^25.3.3",
+    "esbuild": "^0.27.3",
+    "eslint": "^10.0.2",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
+    "prettier": "^3.8.1",
+    "rimraf": "^6.1.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.56.1",
+    "vitest": "^4.0.18"
+  }
+}

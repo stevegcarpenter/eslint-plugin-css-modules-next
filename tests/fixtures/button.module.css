@@ -1,0 +1,14 @@
+.container {
+  display: flex;
+  padding: 16px;
+}
+
+.button {
+  font-weight: bold;
+  border-radius: 4px;
+}
+
+.unused {
+  opacity: 0.5;
+  pointer-events: none;
+}
