@@ -41,8 +41,15 @@
     "scss",
     "less"
   ],
+  "engines": {
+    "node": ">=22"
+  },
   "author": "Steve Carpenter",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stevegcarpenter/eslint-plugin-css-modules-next"
+  },
   "pnpm": {
     "onlyBuiltDependencies": [
       "esbuild"

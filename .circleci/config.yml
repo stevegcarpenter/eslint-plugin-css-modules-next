@@ -1,0 +1,34 @@
+version: 2.1
+orbs:
+  node: circleci/node@5
+jobs:
+  build-and-test:
+    executor:
+      name: node/default
+      tag: '22'
+    steps:
+      - checkout
+      - run:
+          name: Install pnpm
+          command: corepack enable && corepack prepare pnpm@latest --activate
+      - node/install-packages:
+          pkg-manager: pnpm
+      - run:
+          name: Type Check
+          command: pnpm type-check
+      - run:
+          name: Lint
+          command: pnpm lint
+      - run:
+          name: Prettier Check
+          command: pnpm pretty:check
+      - run:
+          name: Run Tests
+          command: pnpm test
+      - run:
+          name: Build
+          command: pnpm build
+workflows:
+  ci:
+    jobs:
+      - build-and-test
