@@ -41,6 +41,7 @@
     "scss",
     "less"
   ],
+  "author": "Steve Carpenter",
   "license": "MIT",
   "pnpm": {
     "onlyBuiltDependencies": [
