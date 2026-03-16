@@ -124,7 +124,7 @@ import styles from './Button.module.css';
 <div className={styles.container}>   // OK
   <span className={styles.label} />  // OK
 </div>
-// Warning: 'deprecated' in Button.module.css is never used in this file
+// Error: 'deprecated' in Button.module.css is never used in this file
 ```
 
 ---
