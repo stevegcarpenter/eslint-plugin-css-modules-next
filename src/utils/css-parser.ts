@@ -4,6 +4,8 @@ import postcss from 'postcss';
 import { parse as parseLess } from 'postcss-less';
 import { parse as parseScss } from 'postcss-scss';
 
+import type { LocalsConvention } from '../types';
+
 /**
  * Parses a CSS/SCSS/LESS string and returns all *local* class names.
  *
@@ -80,4 +82,61 @@ export function resolveCssModulePath(importPath: string): string | null {
     return importPath;
   }
   return null;
+}
+
+/**
+ * Convert a kebab-case identifier to camelCase.
+ *
+ *   "my-button"          → "myButton"
+ *   "my-button--primary" → "myButtonPrimary"
+ *   "already"            → "already"   (no-op when there are no hyphens)
+ */
+export function kebabToCamelCase(str: string): string {
+  return str.replace(/-+([a-z])/g, (_, c: string) => c.toUpperCase());
+}
+
+/**
+ * Expand a set of raw CSS class names according to the `localsConvention`.
+ *
+ * - `"asIs"`:          return unchanged
+ * - `"camelCase"`:     add camelCase variants (originals kept)
+ * - `"camelCaseOnly"`: replace originals with camelCase variants
+ */
+export function expandClassNames(
+  classNames: Set<string>,
+  localsConvention: LocalsConvention
+): Set<string> {
+  if (localsConvention === 'asIs') return classNames;
+
+  const expanded = new Set<string>();
+  for (const name of classNames) {
+    const camel = kebabToCamelCase(name);
+    if (localsConvention === 'camelCase') {
+      expanded.add(name);
+      expanded.add(camel);
+    } else {
+      // camelCaseOnly
+      expanded.add(camel);
+    }
+  }
+  return expanded;
+}
+
+/**
+ * Check whether a raw CSS class name counts as "used" given the set of
+ * property names accessed in JS and the active `localsConvention`.
+ */
+export function isClassUsed(
+  className: string,
+  usedClasses: Set<string>,
+  localsConvention: LocalsConvention
+): boolean {
+  if (localsConvention === 'asIs') return usedClasses.has(className);
+
+  const camel = kebabToCamelCase(className);
+  if (localsConvention === 'camelCase') {
+    return usedClasses.has(className) || usedClasses.has(camel);
+  }
+  // camelCaseOnly
+  return usedClasses.has(camel);
 }

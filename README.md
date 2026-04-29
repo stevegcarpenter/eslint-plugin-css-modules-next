@@ -103,6 +103,30 @@ import styles from './Button.module.css';
 <div className={styles.missing} />    // Error: 'missing' is not defined in Button.module.css
 ```
 
+#### Options
+
+##### `localsConvention`
+
+Type: `"asIs" | "camelCase" | "camelCaseOnly"`
+Default: `"asIs"`
+
+Controls which property names are considered valid when accessing CSS module classes. This should match the [`localsConvention`](https://github.com/css-modules/postcss-modules#localsconvention) setting in your CSS modules bundler configuration.
+
+- **`"asIs"`** — class names are exported exactly as written in CSS. `styles["my-button"]` is valid; `styles.myButton` is not.
+- **`"camelCase"`** — both the original name and its camelCase equivalent are valid. `styles["my-button"]` and `styles.myButton` both work.
+- **`"camelCaseOnly"`** — only the camelCase equivalent is valid. `styles.myButton` works; `styles["my-button"]` does not.
+
+```js
+// eslint.config.js
+export default [
+  {
+    rules: {
+      'css-modules-next/no-undefined-class': ['error', { localsConvention: 'camelCase' }],
+    },
+  },
+];
+```
+
 ---
 
 ### `css-modules-next/no-unused-class`
@@ -125,6 +149,30 @@ import styles from './Button.module.css';
   <span className={styles.label} />  // OK
 </div>
 // Error: 'deprecated' in Button.module.css is never used in this file
+```
+
+#### Options
+
+##### `localsConvention`
+
+Type: `"asIs" | "camelCase" | "camelCaseOnly"`
+Default: `"asIs"`
+
+Controls which property accesses count as "using" a CSS class. This should match the [`localsConvention`](https://github.com/css-modules/postcss-modules#localsconvention) setting in your CSS modules bundler configuration.
+
+- **`"asIs"`** — a class is considered used only if its original name is accessed. `styles.myButton` does not satisfy `.my-button`.
+- **`"camelCase"`** — a class is considered used if either its original name or its camelCase equivalent is accessed. Both `styles["my-button"]` and `styles.myButton` satisfy `.my-button`.
+- **`"camelCaseOnly"`** — a class is considered used only if its camelCase equivalent is accessed. `styles.myButton` satisfies `.my-button`; `styles["my-button"]` does not.
+
+```js
+// eslint.config.js
+export default [
+  {
+    rules: {
+      'css-modules-next/no-unused-class': ['error', { localsConvention: 'camelCase' }],
+    },
+  },
+];
 ```
 
 ---
