@@ -171,8 +171,6 @@ describe('no-unused-class', () => {
   ruleTester.run('unused nested class (SCSS nesting) is reported', rule, {
     valid: [],
     invalid: [
-      // card.module.scss defines .card, .header (nested), .body (nested).
-      // Only .card and .header are referenced — .body should be flagged.
       {
         filename: fixtureFile,
         code: `
@@ -192,4 +190,180 @@ describe('no-unused-class', () => {
       },
     ],
   });
+
+  // ── Bracket notation ────────────────────────────────────────────────────────
+
+  ruleTester.run('bracket notation with string literal counts as usage', rule, {
+    valid: [
+      {
+        filename: fixtureFile,
+        code: `
+          import styles from './kebab.module.css';
+          const a = styles["my-button"];
+          const b = styles["my-button--primary"];
+          const c = styles.label;
+          const d = styles.icon;
+        `,
+      },
+    ],
+    invalid: [],
+  });
+
+  // ── localsConvention: asIs (default) ────────────────────────────────────────
+
+  ruleTester.run('asIs — kebab-case classes must be accessed as-is', rule, {
+    valid: [
+      {
+        filename: fixtureFile,
+        code: `
+          import styles from './kebab.module.css';
+          const a = styles["my-button"];
+          const b = styles["my-button--primary"];
+          const c = styles.label;
+          const d = styles.icon;
+        `,
+        options: [{ localsConvention: 'asIs' }],
+      },
+    ],
+    invalid: [
+      {
+        filename: fixtureFile,
+        code: `
+          import styles from './kebab.module.css';
+          const a = styles.myButton;
+          const b = styles.myButtonPrimary;
+          const c = styles.label;
+          const d = styles.icon;
+        `,
+        options: [{ localsConvention: 'asIs' }],
+        errors: [
+          {
+            messageId: 'unusedClass',
+            data: {
+              className: 'my-button',
+              moduleFile: join(fixturesDir, 'kebab.module.css'),
+            },
+          },
+          {
+            messageId: 'unusedClass',
+            data: {
+              className: 'my-button--primary',
+              moduleFile: join(fixturesDir, 'kebab.module.css'),
+            },
+          },
+        ],
+      },
+    ],
+  });
+
+  // ── localsConvention: camelCase ─────────────────────────────────────────────
+
+  ruleTester.run(
+    'camelCase — camelCase access satisfies kebab-case definition',
+    rule,
+    {
+      valid: [
+        {
+          filename: fixtureFile,
+          code: `
+          import styles from './kebab.module.css';
+          const a = styles.myButton;
+          const b = styles.myButtonPrimary;
+          const c = styles.label;
+          const d = styles.icon;
+        `,
+          options: [{ localsConvention: 'camelCase' }],
+        },
+        {
+          filename: fixtureFile,
+          code: `
+          import styles from './kebab.module.css';
+          const a = styles["my-button"];
+          const b = styles["my-button--primary"];
+          const c = styles.label;
+          const d = styles.icon;
+        `,
+          options: [{ localsConvention: 'camelCase' }],
+        },
+      ],
+      invalid: [
+        {
+          filename: fixtureFile,
+          code: `
+          import styles from './kebab.module.css';
+          const a = styles.myButton;
+          const b = styles.label;
+        `,
+          options: [{ localsConvention: 'camelCase' }],
+          errors: [
+            {
+              messageId: 'unusedClass',
+              data: {
+                className: 'my-button--primary',
+                moduleFile: join(fixturesDir, 'kebab.module.css'),
+              },
+            },
+            {
+              messageId: 'unusedClass',
+              data: {
+                className: 'icon',
+                moduleFile: join(fixturesDir, 'kebab.module.css'),
+              },
+            },
+          ],
+        },
+      ],
+    }
+  );
+
+  // ── localsConvention: camelCaseOnly ─────────────────────────────────────────
+
+  ruleTester.run(
+    'camelCaseOnly — only camelCase access satisfies kebab-case definition',
+    rule,
+    {
+      valid: [
+        {
+          filename: fixtureFile,
+          code: `
+          import styles from './kebab.module.css';
+          const a = styles.myButton;
+          const b = styles.myButtonPrimary;
+          const c = styles.label;
+          const d = styles.icon;
+        `,
+          options: [{ localsConvention: 'camelCaseOnly' }],
+        },
+      ],
+      invalid: [
+        {
+          filename: fixtureFile,
+          code: `
+          import styles from './kebab.module.css';
+          const a = styles["my-button"];
+          const b = styles["my-button--primary"];
+          const c = styles.label;
+          const d = styles.icon;
+        `,
+          options: [{ localsConvention: 'camelCaseOnly' }],
+          errors: [
+            {
+              messageId: 'unusedClass',
+              data: {
+                className: 'my-button',
+                moduleFile: join(fixturesDir, 'kebab.module.css'),
+              },
+            },
+            {
+              messageId: 'unusedClass',
+              data: {
+                className: 'my-button--primary',
+                moduleFile: join(fixturesDir, 'kebab.module.css'),
+              },
+            },
+          ],
+        },
+      ],
+    }
+  );
 });
