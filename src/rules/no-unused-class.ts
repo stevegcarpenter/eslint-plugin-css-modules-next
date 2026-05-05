@@ -2,7 +2,13 @@ import type { Rule } from 'eslint';
 import { existsSync } from 'fs';
 import { dirname, resolve } from 'path';
 
-import { extractClassNames, resolveCssModulePath } from '../utils/css-parser';
+import type { LocalsConvention } from '../types';
+import { localsConventionSchema } from '../types';
+import {
+  extractClassNames,
+  isClassUsed,
+  resolveCssModulePath,
+} from '../utils/css-parser';
 
 /**
  * Reports when a CSS module file contains class definitions that are never
@@ -26,10 +32,16 @@ const rule: Rule.RuleModule = {
       unusedClass:
         'Class "{{className}}" in CSS module "{{moduleFile}}" is never used in this file.',
     },
-    schema: [],
+    schema: localsConventionSchema,
   },
 
   create(context) {
+    const options = (context.options[0] ?? {}) as {
+      localsConvention?: LocalsConvention;
+    };
+    const localsConvention: LocalsConvention =
+      options.localsConvention ?? 'asIs';
+
     // Map of local identifier → { absolutePath, importNode }
     const cssModuleImports = new Map<
       string,
@@ -64,13 +76,23 @@ const rule: Rule.RuleModule = {
 
       MemberExpression(node) {
         if (node.object.type !== 'Identifier') return;
-        if (node.computed) return;
-        if (node.property.type !== 'Identifier') return;
 
         const objectName = node.object.name;
         if (!cssModuleImports.has(objectName)) return;
 
-        accessedClasses.get(objectName)?.add(node.property.name);
+        let className: string | null = null;
+        if (!node.computed && node.property.type === 'Identifier') {
+          className = node.property.name;
+        } else if (
+          node.computed &&
+          node.property.type === 'Literal' &&
+          typeof node.property.value === 'string'
+        ) {
+          className = node.property.value;
+        }
+        if (className) {
+          accessedClasses.get(objectName)?.add(className);
+        }
       },
 
       'Program:exit'() {
@@ -81,11 +103,11 @@ const rule: Rule.RuleModule = {
           if (!existsSync(absolutePath)) continue;
 
           const definedClasses = extractClassNames(absolutePath);
-          if (!definedClasses) continue; // unparsable CSS — skip to avoid false positives
+          if (!definedClasses) continue;
           const used = accessedClasses.get(identifier) ?? new Set<string>();
 
           for (const className of definedClasses) {
-            if (!used.has(className)) {
+            if (!isClassUsed(className, used, localsConvention)) {
               context.report({
                 node: importNode,
                 messageId: 'unusedClass',

@@ -1,0 +1,18 @@
+.my-button {
+  font-weight: bold;
+  border-radius: 4px;
+}
+
+.my-button--primary {
+  background: blue;
+  color: white;
+}
+
+.label {
+  font-size: 14px;
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+}

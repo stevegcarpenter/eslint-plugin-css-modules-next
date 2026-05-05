@@ -104,4 +104,151 @@ describe('no-undefined-class', () => {
       },
     ],
   });
+
+  // ── Bracket notation ────────────────────────────────────────────────────────
+
+  ruleTester.run('bracket notation with string literal', rule, {
+    valid: [
+      {
+        filename: fixtureFile,
+        code: `
+          import styles from './kebab.module.css';
+          const a = styles["my-button"];
+        `,
+      },
+    ],
+    invalid: [
+      {
+        filename: fixtureFile,
+        code: `
+          import styles from './kebab.module.css';
+          const a = styles["ghost"];
+        `,
+        errors: [
+          {
+            messageId: 'undefinedClass',
+            data: {
+              className: 'ghost',
+              moduleFile: join(fixturesDir, 'kebab.module.css'),
+            },
+          },
+        ],
+      },
+    ],
+  });
+
+  // ── localsConvention: asIs (default) ────────────────────────────────────────
+
+  ruleTester.run(
+    'asIs — kebab-case class accessed via bracket notation',
+    rule,
+    {
+      valid: [
+        {
+          filename: fixtureFile,
+          code: `
+          import styles from './kebab.module.css';
+          const a = styles["my-button"];
+          const b = styles["my-button--primary"];
+          const c = styles.label;
+        `,
+          options: [{ localsConvention: 'asIs' }],
+        },
+      ],
+      invalid: [
+        {
+          filename: fixtureFile,
+          code: `
+          import styles from './kebab.module.css';
+          const a = styles.myButton;
+        `,
+          options: [{ localsConvention: 'asIs' }],
+          errors: [
+            {
+              messageId: 'undefinedClass',
+              data: {
+                className: 'myButton',
+                moduleFile: join(fixturesDir, 'kebab.module.css'),
+              },
+            },
+          ],
+        },
+      ],
+    }
+  );
+
+  // ── localsConvention: camelCase ─────────────────────────────────────────────
+
+  ruleTester.run('camelCase — both original and camelCase are valid', rule, {
+    valid: [
+      {
+        filename: fixtureFile,
+        code: `
+          import styles from './kebab.module.css';
+          const a = styles.myButton;
+          const b = styles["my-button"];
+          const c = styles.myButtonPrimary;
+          const d = styles["my-button--primary"];
+          const e = styles.label;
+        `,
+        options: [{ localsConvention: 'camelCase' }],
+      },
+    ],
+    invalid: [
+      {
+        filename: fixtureFile,
+        code: `
+          import styles from './kebab.module.css';
+          const a = styles.ghost;
+        `,
+        options: [{ localsConvention: 'camelCase' }],
+        errors: [
+          {
+            messageId: 'undefinedClass',
+            data: {
+              className: 'ghost',
+              moduleFile: join(fixturesDir, 'kebab.module.css'),
+            },
+          },
+        ],
+      },
+    ],
+  });
+
+  // ── localsConvention: camelCaseOnly ─────────────────────────────────────────
+
+  ruleTester.run('camelCaseOnly — only camelCase keys are valid', rule, {
+    valid: [
+      {
+        filename: fixtureFile,
+        code: `
+          import styles from './kebab.module.css';
+          const a = styles.myButton;
+          const b = styles.myButtonPrimary;
+          const c = styles.label;
+          const d = styles.icon;
+        `,
+        options: [{ localsConvention: 'camelCaseOnly' }],
+      },
+    ],
+    invalid: [
+      {
+        filename: fixtureFile,
+        code: `
+          import styles from './kebab.module.css';
+          const a = styles["my-button"];
+        `,
+        options: [{ localsConvention: 'camelCaseOnly' }],
+        errors: [
+          {
+            messageId: 'undefinedClass',
+            data: {
+              className: 'my-button',
+              moduleFile: join(fixturesDir, 'kebab.module.css'),
+            },
+          },
+        ],
+      },
+    ],
+  });
 });
