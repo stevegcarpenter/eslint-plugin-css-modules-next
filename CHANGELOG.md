@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2026-05-10
+
+### Changed
+- Migrated git hooks management from custom scripts to [lefthook](https://github.com/evilmartians/lefthook) (#9).
+- Replaced ESLint + Prettier with [oxlint](https://oxc.rs/docs/guide/usage/linter) + [oxfmt](https://github.com/nicolo-ribaudo/oxfmt) for internal linting and formatting (#10). No impact on plugin behavior or consumer configuration.
+- Bumped minimum Node.js requirement to 22.18 and updated CI to Node 26 (#10).
+
 ## [1.1.0] - 2026-05-04
 
 ### Added
