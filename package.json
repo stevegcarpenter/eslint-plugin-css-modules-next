@@ -50,12 +50,6 @@
     "type": "git",
     "url": "https://github.com/stevegcarpenter/eslint-plugin-css-modules-next"
   },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild",
-      "lefthook"
-    ]
-  },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^25.3.3",
