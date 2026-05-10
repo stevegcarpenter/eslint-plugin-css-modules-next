@@ -10,7 +10,7 @@ jobs:
       - checkout
       - run:
           name: Install pnpm
-          command: corepack enable && corepack prepare pnpm@latest --activate
+          command: npm install -g pnpm@11.0.8
       - node/install-packages:
           pkg-manager: pnpm
       - run:
