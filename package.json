@@ -17,7 +17,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "rimraf dist && node scripts/build.mjs && tsc --project tsconfig.build.json",
+    "build": "rimraf dist && node build.mjs && tsc --project tsconfig.build.json",
     "clean": "rimraf dist",
     "lint": "eslint src tests",
     "lint:fix": "eslint src tests --fix",
@@ -25,8 +25,7 @@
     "pretty:fix": "prettier --write src tests",
     "test": "vitest run",
     "test:watch": "vitest",
-    "type-check": "tsc --noEmit",
-    "postinstall": "sh scripts/install-hooks.sh || true"
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "postcss": "^8.5.8",
@@ -44,16 +43,12 @@
   "engines": {
     "node": ">=22"
   },
+  "packageManager": "pnpm@11.0.8+sha512.4c4097e1dd2d42372c4e7fa5a791ff28fc75a484c7ac192e64b1df0fdef17594ba982f9b4fed9adfb3c757846f565b799b2763fb3733d1de1bcb82cf46684912",
   "author": "Steve Carpenter",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/stevegcarpenter/eslint-plugin-css-modules-next"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild"
-    ]
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -66,6 +61,7 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.56.1",
+    "lefthook": "^2.1.6",
     "vitest": "^4.0.18"
   }
 }

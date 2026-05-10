@@ -1,0 +1,29 @@
+pre-commit:
+  commands:
+    check-branch:
+      run: |
+        branch=$(git symbolic-ref --short HEAD 2>/dev/null)
+        if [ "$branch" = "main" ] || [ "$branch" = "master" ]; then
+          echo "ERROR: Direct commits to the '$branch' branch are restricted."
+          echo "Please create a feature branch and open a pull request instead."
+          echo "If you need to bypass this check, add --no-verify to the commit command."
+          exit 1
+        fi
+    check-logs:
+      run: |
+        files=$(git diff --cached --name-only --diff-filter=AM | grep -E '\.(ts|tsx|js|jsx)$')
+        [ -z "$files" ] && exit 0
+        files_with_logs=""
+        for f in $files; do
+          git show ":$f" | grep -qE 'console\.log' && files_with_logs="$files_with_logs $f"
+        done
+        if [ -n "$files_with_logs" ]; then
+          echo "ERROR: Please remove console.log before committing the following files:"
+          printf '%s\n' $files_with_logs
+          echo "If you think these logs are necessary, add --no-verify to the commit command."
+          exit 1
+        fi
+    lint:
+      run: pnpm run lint
+    prettier:
+      run: pnpm run pretty:check
