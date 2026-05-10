@@ -8,9 +8,6 @@ jobs:
       tag: '26.1.0'
     steps:
       - checkout
-      - run:
-          name: Install pnpm
-          command: sudo npm install -g pnpm@11.0.8
       - node/install-packages:
           pkg-manager: pnpm
       - run:
