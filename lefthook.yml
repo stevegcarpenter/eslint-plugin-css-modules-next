@@ -25,5 +25,5 @@ pre-commit:
         fi
     lint:
       run: pnpm run lint
-    prettier:
+    format:
       run: pnpm run pretty:check

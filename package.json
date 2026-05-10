@@ -19,10 +19,10 @@
   "scripts": {
     "build": "rimraf dist && node build.mjs && tsc --project tsconfig.build.json",
     "clean": "rimraf dist",
-    "lint": "eslint src tests",
-    "lint:fix": "eslint src tests --fix",
-    "pretty:check": "prettier --check src tests",
-    "pretty:fix": "prettier --write src tests",
+    "lint": "oxlint src tests",
+    "lint:fix": "oxlint src tests --fix",
+    "pretty:check": "oxfmt --check src tests",
+    "pretty:fix": "oxfmt src tests",
     "test": "vitest run",
     "test:watch": "vitest",
     "type-check": "tsc --noEmit"
@@ -51,17 +51,14 @@
     "url": "https://github.com/stevegcarpenter/eslint-plugin-css-modules-next"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
     "@types/node": "^25.3.3",
     "esbuild": "^0.27.3",
-    "eslint": "^10.0.2",
-    "eslint-plugin-simple-import-sort": "^12.1.1",
-    "prettier": "^3.8.1",
+    "lefthook": "^2.1.6",
+    "oxfmt": "^0.48.0",
+    "oxlint": "^1.63.0",
     "rimraf": "^6.1.3",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.56.1",
-    "lefthook": "^2.1.6",
     "vitest": "^4.0.18"
   }
 }
