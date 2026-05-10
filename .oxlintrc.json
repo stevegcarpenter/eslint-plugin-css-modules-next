@@ -7,5 +7,8 @@
   "rules": {
     "no-unused-vars": "error"
   },
+  "options": {
+    "typeAware": true
+  },
   "ignorePatterns": ["node_modules/**", "dist/**", "scripts/**"]
 }
