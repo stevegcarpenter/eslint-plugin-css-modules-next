@@ -1,0 +1,29 @@
+import { defineConfig } from 'oxfmt';
+
+export default defineConfig({
+  printWidth: 80,
+  singleQuote: true,
+  semi: true,
+  tabWidth: 2,
+  useTabs: false,
+  trailingComma: 'es5',
+  sortImports: {},
+  ignorePatterns: [
+    'node_modules',
+    'dist',
+    'lib',
+    '*.md',
+    'pnpm-lock.yaml',
+    'yarn.lock',
+    'package-lock.json',
+    '.vscode',
+    '.claude',
+    'tests/files/**',
+    'coverage',
+    '.next/',
+    'out/',
+    'build',
+    '.turbo',
+    'bundle-stats/',
+  ],
+});
