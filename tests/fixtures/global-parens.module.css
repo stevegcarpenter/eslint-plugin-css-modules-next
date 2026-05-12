@@ -1,0 +1,7 @@
+.localClass {
+  color: red;
+}
+
+:global(.globalClass) {
+  color: blue;
+}

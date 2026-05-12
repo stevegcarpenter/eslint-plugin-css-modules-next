@@ -8,6 +8,26 @@ import { parse as parseScss } from 'postcss-scss';
 import type { LocalsConvention } from '../types';
 
 /**
+ * Check whether a PostCSS rule node is nested inside a `:global { }` block.
+ *
+ * Walks up the parent chain looking for an ancestor rule whose selector
+ * contains `:global` in block form (i.e. NOT the `:global(...)` function form).
+ */
+function isInsideGlobalBlock(rule: postcss.Rule): boolean {
+  let parent = rule.parent;
+  while (parent && parent.type !== 'root') {
+    if (
+      parent.type === 'rule' &&
+      /:global(?!\()/.test((parent as postcss.Rule).selector)
+    ) {
+      return true;
+    }
+    parent = parent.parent;
+  }
+  return false;
+}
+
+/**
  * Parses a CSS/SCSS/LESS string and returns all *local* class names.
  *
  * Returns `null` when the content cannot be parsed (e.g. corrupt content), so
@@ -16,6 +36,8 @@ import type { LocalsConvention } from '../types';
  * Key behaviors:
  * - `:global(.Foo)` selectors are stripped before matching — those names belong
  *   to the global scope and are not part of the CSS module's local interface.
+ * - `:global { }` block syntax causes all nested rules to be skipped — classes
+ *   inside a `:global` block belong to the global scope.
  * - `:local(.foo)` is treated as a regular local class (it is one).
  * - Classes referenced inside pseudo-class functions such as `:not(.disabled)`,
  *   `:where(.active)`, `:is(.primary)`, `:has(.icon)` are extracted, because
@@ -43,11 +65,8 @@ export function parseClassNames(
   const classNames = new Set<string>();
 
   root.walkRules((rule) => {
-    // Strip :global(...) pseudo-class blocks from the selector before matching.
-    // Classes inside :global() belong to the external/global scope — they are
-    // not part of this CSS module's local class interface.
-    // Note: [^)]* handles selectors like :global(.foo .bar) and
-    // :global(.foo, .bar) which contain no nested parentheses.
+    if (isInsideGlobalBlock(rule)) return;
+
     const localSelector = rule.selector.replace(/:global\([^)]*\)/g, '');
 
     const matches = localSelector.matchAll(/\.([a-zA-Z_][a-zA-Z0-9_-]*)/g);

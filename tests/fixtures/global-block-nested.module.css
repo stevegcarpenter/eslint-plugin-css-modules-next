@@ -1,0 +1,9 @@
+.localClass {
+  color: red;
+}
+
+.wrapper :global {
+  .nestedGlobalClass {
+    color: blue;
+  }
+}

@@ -106,6 +106,41 @@ describe('no-undefined-class', () => {
     ],
   });
 
+  // ── :global block handling ──────────────────────────────────────────────────
+
+  const globalBlockFile = join(fixturesDir, 'GlobalBlock.tsx');
+  const globalBlockNestedFile = join(fixturesDir, 'GlobalBlockNested.tsx');
+  const globalParensFile = join(fixturesDir, 'GlobalParens.tsx');
+
+  ruleTester.run('no-undefined-class (:global block)', rule, {
+    valid: [
+      {
+        filename: globalBlockFile,
+        code: `import styles from './global-block.module.css'; styles.localClass;`,
+      },
+      {
+        filename: globalBlockNestedFile,
+        code: `import styles from './global-block-nested.module.css'; styles.localClass; styles.wrapper;`,
+      },
+      {
+        filename: globalParensFile,
+        code: `import styles from './global-parens.module.css'; styles.localClass;`,
+      },
+    ],
+    invalid: [
+      {
+        filename: globalBlockFile,
+        code: `import styles from './global-block.module.css'; styles.globalClass;`,
+        errors: [{ messageId: 'undefinedClass' }],
+      },
+      {
+        filename: globalBlockNestedFile,
+        code: `import styles from './global-block-nested.module.css'; styles.nestedGlobalClass;`,
+        errors: [{ messageId: 'undefinedClass' }],
+      },
+    ],
+  });
+
   // ── Bracket notation ────────────────────────────────────────────────────────
 
   ruleTester.run('bracket notation with string literal', rule, {
