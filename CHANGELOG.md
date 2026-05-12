@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-05-11
+
+### Fixed
+- False positives for classes nested inside `:global { }` blocks (the block form of `:global`). Previously, classes such as `.foo` in `:global { .foo { } }` were incorrectly treated as local CSS module classes and could trigger `no-undefined-class` or `no-unused-class` violations. They are now correctly recognised as global-scoped and excluded from the local interface (#12).
+
 ## [1.1.1] - 2026-05-10
 
 ### Changed
