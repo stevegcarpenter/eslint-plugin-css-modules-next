@@ -48,7 +48,8 @@ const rule: Rule.RuleModule = {
 
     return {
       ImportDeclaration(node) {
-        const importPath = node.source.value as string;
+        const importPath = node.source.value;
+        if (typeof importPath !== 'string') return;
         const resolvedCssPath = resolveCssModulePath(importPath);
         if (!resolvedCssPath) return;
 
@@ -78,7 +79,10 @@ const rule: Rule.RuleModule = {
             const importedName =
               specifier.imported.type === 'Identifier'
                 ? specifier.imported.name
-                : (specifier.imported.value as string);
+                : typeof specifier.imported.value === 'string'
+                  ? specifier.imported.value
+                  : null;
+            if (!importedName) continue;
             if (!definedClasses.has(importedName)) {
               context.report({
                 node: specifier.imported,

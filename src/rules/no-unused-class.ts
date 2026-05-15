@@ -1,7 +1,7 @@
 import { existsSync } from 'fs';
 import { dirname, resolve } from 'path';
 
-import type { Rule } from 'eslint';
+import type { JSSyntaxElement, Rule } from 'eslint';
 
 import type { LocalsConvention } from '../types';
 import { localsConventionSchema } from '../types';
@@ -47,7 +47,7 @@ const rule: Rule.RuleModule = {
     // Consolidates usages from member expressions, named imports, and destructuring.
     const cssModulesByPath = new Map<
       string,
-      { importNode: Rule.Node; usedClasses: Set<string> }
+      { importNode: JSSyntaxElement; usedClasses: Set<string> }
     >();
 
     // Map import identifier (default/namespace) → CSS module absolute path
@@ -55,7 +55,8 @@ const rule: Rule.RuleModule = {
 
     return {
       ImportDeclaration(node) {
-        const importPath = node.source.value as string;
+        const importPath = node.source.value;
+        if (typeof importPath !== 'string') return;
         const resolvedCssPath = resolveCssModulePath(importPath);
         if (!resolvedCssPath) return;
 
@@ -64,7 +65,7 @@ const rule: Rule.RuleModule = {
 
         if (!cssModulesByPath.has(absoluteCssPath)) {
           cssModulesByPath.set(absoluteCssPath, {
-            importNode: node as unknown as Rule.Node,
+            importNode: node,
             usedClasses: new Set(),
           });
         }
@@ -80,7 +81,10 @@ const rule: Rule.RuleModule = {
             const importedName =
               specifier.imported.type === 'Identifier'
                 ? specifier.imported.name
-                : (specifier.imported.value as string);
+                : typeof specifier.imported.value === 'string'
+                  ? specifier.imported.value
+                  : null;
+            if (!importedName) continue;
             entry.usedClasses.add(importedName);
           }
         }
