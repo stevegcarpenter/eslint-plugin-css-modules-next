@@ -1,7 +1,7 @@
 import { existsSync } from 'fs';
 import { dirname, resolve } from 'path';
 
-import type { Rule } from 'eslint';
+import type { JSSyntaxElement, Rule } from 'eslint';
 
 import type { LocalsConvention } from '../types';
 import { localsConventionSchema } from '../types';
@@ -43,34 +43,49 @@ const rule: Rule.RuleModule = {
     const localsConvention: LocalsConvention =
       options.localsConvention ?? 'asIs';
 
-    // Map of local identifier → { absolutePath, importNode }
-    const cssModuleImports = new Map<
+    // Map CSS module path → { importNode, usedClasses }
+    // Consolidates usages from member expressions, named imports, and destructuring.
+    const cssModulesByPath = new Map<
       string,
-      { absolutePath: string; importNode: Rule.Node }
+      { importNode: JSSyntaxElement; usedClasses: Set<string> }
     >();
 
-    // Track all member expressions: identifier → Set of accessed property names
-    const accessedClasses = new Map<string, Set<string>>();
+    // Map import identifier (default/namespace) → CSS module absolute path
+    const identifierToCssPath = new Map<string, string>();
 
     return {
       ImportDeclaration(node) {
-        const importPath = node.source.value as string;
+        const importPath = node.source.value;
+        if (typeof importPath !== 'string') return;
         const resolvedCssPath = resolveCssModulePath(importPath);
         if (!resolvedCssPath) return;
 
         const currentFileDir = dirname(context.filename);
         const absoluteCssPath = resolve(currentFileDir, resolvedCssPath);
 
+        if (!cssModulesByPath.has(absoluteCssPath)) {
+          cssModulesByPath.set(absoluteCssPath, {
+            importNode: node,
+            usedClasses: new Set(),
+          });
+        }
+        const entry = cssModulesByPath.get(absoluteCssPath)!;
+
         for (const specifier of node.specifiers) {
           if (
             specifier.type === 'ImportDefaultSpecifier' ||
             specifier.type === 'ImportNamespaceSpecifier'
           ) {
-            cssModuleImports.set(specifier.local.name, {
-              absolutePath: absoluteCssPath,
-              importNode: node as unknown as Rule.Node,
-            });
-            accessedClasses.set(specifier.local.name, new Set());
+            identifierToCssPath.set(specifier.local.name, absoluteCssPath);
+          } else if (specifier.type === 'ImportSpecifier') {
+            const importedName =
+              specifier.imported.type === 'Identifier'
+                ? specifier.imported.name
+                : typeof specifier.imported.value === 'string'
+                  ? specifier.imported.value
+                  : null;
+            if (!importedName) continue;
+            entry.usedClasses.add(importedName);
           }
         }
       },
@@ -78,8 +93,8 @@ const rule: Rule.RuleModule = {
       MemberExpression(node) {
         if (node.object.type !== 'Identifier') return;
 
-        const objectName = node.object.name;
-        if (!cssModuleImports.has(objectName)) return;
+        const cssPath = identifierToCssPath.get(node.object.name);
+        if (!cssPath) return;
 
         let className: string | null = null;
         if (!node.computed && node.property.type === 'Identifier') {
@@ -92,23 +107,45 @@ const rule: Rule.RuleModule = {
           className = node.property.value;
         }
         if (className) {
-          accessedClasses.get(objectName)?.add(className);
+          cssModulesByPath.get(cssPath)?.usedClasses.add(className);
+        }
+      },
+
+      VariableDeclarator(node) {
+        if (node.id.type !== 'ObjectPattern') return;
+        if (!node.init || node.init.type !== 'Identifier') return;
+
+        const cssPath = identifierToCssPath.get(node.init.name);
+        if (!cssPath) return;
+
+        const entry = cssModulesByPath.get(cssPath);
+        if (!entry) return;
+
+        for (const prop of node.id.properties) {
+          if (prop.type !== 'Property') continue;
+          if (prop.key.type === 'Identifier') {
+            entry.usedClasses.add(prop.key.name);
+          } else if (
+            prop.key.type === 'Literal' &&
+            typeof prop.key.value === 'string'
+          ) {
+            entry.usedClasses.add(prop.key.value);
+          }
         }
       },
 
       'Program:exit'() {
         for (const [
-          identifier,
-          { absolutePath, importNode },
-        ] of cssModuleImports) {
+          absolutePath,
+          { importNode, usedClasses },
+        ] of cssModulesByPath) {
           if (!existsSync(absolutePath)) continue;
 
           const definedClasses = extractClassNames(absolutePath);
           if (!definedClasses) continue;
-          const used = accessedClasses.get(identifier) ?? new Set<string>();
 
           for (const className of definedClasses) {
-            if (!isClassUsed(className, used, localsConvention)) {
+            if (!isClassUsed(className, usedClasses, localsConvention)) {
               context.report({
                 node: importNode,
                 messageId: 'unusedClass',

@@ -394,4 +394,166 @@ styles.localClass;`,
       ],
     }
   );
+
+  // ── Named import support ────────────────────────────────────────────────────
+
+  ruleTester.run(
+    'named imports — all classes imported by name are used',
+    rule,
+    {
+      valid: [
+        // All three classes in button.module.css imported by name
+        {
+          filename: fixtureFile,
+          code: `import { container, button, unused } from './button.module.css';`,
+        },
+        // Mixed default + named — together they cover all classes
+        {
+          filename: fixtureFile,
+          code: `
+          import styles, { unused } from './button.module.css';
+          const a = styles.container;
+          const b = styles.button;
+        `,
+        },
+      ],
+      invalid: [],
+    }
+  );
+
+  ruleTester.run('named imports — unimported class is reported', rule, {
+    valid: [],
+    invalid: [
+      // Only container and button imported — unused should be flagged
+      {
+        filename: fixtureFile,
+        code: `import { container, button } from './button.module.css';`,
+        errors: [
+          {
+            messageId: 'unusedClass',
+            data: {
+              className: 'unused',
+              moduleFile: join(fixturesDir, 'button.module.css'),
+            },
+          },
+        ],
+      },
+      // Only one class imported — two flagged
+      {
+        filename: fixtureFile,
+        code: `import { container } from './button.module.css';`,
+        errors: [
+          {
+            messageId: 'unusedClass',
+            data: {
+              className: 'button',
+              moduleFile: join(fixturesDir, 'button.module.css'),
+            },
+          },
+          {
+            messageId: 'unusedClass',
+            data: {
+              className: 'unused',
+              moduleFile: join(fixturesDir, 'button.module.css'),
+            },
+          },
+        ],
+      },
+    ],
+  });
+
+  // ── Destructuring support ───────────────────────────────────────────────────
+
+  ruleTester.run('destructuring — all classes destructured are used', rule, {
+    valid: [
+      // All three classes destructured from default import
+      {
+        filename: fixtureFile,
+        code: `
+          import styles from './button.module.css';
+          const { container, button, unused } = styles;
+        `,
+      },
+      // Renamed binding: key is 'container', local is 'wrapper' — CSS class is used
+      {
+        filename: fixtureFile,
+        code: `
+          import styles from './button.module.css';
+          const { container: wrapper, button, unused } = styles;
+        `,
+      },
+      // Mix of destructuring + member expression covers all classes
+      {
+        filename: fixtureFile,
+        code: `
+          import styles from './button.module.css';
+          const { container } = styles;
+          const b = styles.button;
+          const c = styles.unused;
+        `,
+      },
+    ],
+    invalid: [],
+  });
+
+  ruleTester.run('destructuring — undestructured class is reported', rule, {
+    valid: [],
+    invalid: [
+      // container and button destructured — unused is not
+      {
+        filename: fixtureFile,
+        code: `
+          import styles from './button.module.css';
+          const { container, button } = styles;
+        `,
+        errors: [
+          {
+            messageId: 'unusedClass',
+            data: {
+              className: 'unused',
+              moduleFile: join(fixturesDir, 'button.module.css'),
+            },
+          },
+        ],
+      },
+    ],
+  });
+
+  ruleTester.run('destructuring — non-CSS-module object is not tracked', rule, {
+    valid: [],
+    invalid: [
+      // Destructuring 'obj' (not a CSS module) does not mark styles' classes as used
+      {
+        filename: fixtureFile,
+        code: `
+          import styles from './button.module.css';
+          const obj = { container: 'x' };
+          const { container } = obj;
+        `,
+        errors: [
+          {
+            messageId: 'unusedClass',
+            data: {
+              className: 'container',
+              moduleFile: join(fixturesDir, 'button.module.css'),
+            },
+          },
+          {
+            messageId: 'unusedClass',
+            data: {
+              className: 'button',
+              moduleFile: join(fixturesDir, 'button.module.css'),
+            },
+          },
+          {
+            messageId: 'unusedClass',
+            data: {
+              className: 'unused',
+              moduleFile: join(fixturesDir, 'button.module.css'),
+            },
+          },
+        ],
+      },
+    ],
+  });
 });

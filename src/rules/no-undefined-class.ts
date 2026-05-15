@@ -48,12 +48,15 @@ const rule: Rule.RuleModule = {
 
     return {
       ImportDeclaration(node) {
-        const importPath = node.source.value as string;
+        const importPath = node.source.value;
+        if (typeof importPath !== 'string') return;
         const resolvedCssPath = resolveCssModulePath(importPath);
         if (!resolvedCssPath) return;
 
         const currentFileDir = dirname(context.filename);
         const absoluteCssPath = resolve(currentFileDir, resolvedCssPath);
+
+        let definedClasses: Set<string> | null | undefined;
 
         for (const specifier of node.specifiers) {
           if (
@@ -61,6 +64,35 @@ const rule: Rule.RuleModule = {
             specifier.type === 'ImportNamespaceSpecifier'
           ) {
             cssModuleImports.set(specifier.local.name, absoluteCssPath);
+          } else if (specifier.type === 'ImportSpecifier') {
+            if (definedClasses === undefined) {
+              if (!existsSync(absoluteCssPath)) {
+                definedClasses = null;
+              } else {
+                const raw = extractClassNames(absoluteCssPath);
+                definedClasses = raw
+                  ? expandClassNames(raw, localsConvention)
+                  : null;
+              }
+            }
+            if (!definedClasses) continue;
+            const importedName =
+              specifier.imported.type === 'Identifier'
+                ? specifier.imported.name
+                : typeof specifier.imported.value === 'string'
+                  ? specifier.imported.value
+                  : null;
+            if (!importedName) continue;
+            if (!definedClasses.has(importedName)) {
+              context.report({
+                node: specifier.imported,
+                messageId: 'undefinedClass',
+                data: {
+                  className: importedName,
+                  moduleFile: absoluteCssPath,
+                },
+              });
+            }
           }
         }
       },

@@ -287,4 +287,122 @@ describe('no-undefined-class', () => {
       },
     ],
   });
+
+  // ── Named import support ────────────────────────────────────────────────────
+
+  ruleTester.run('named imports — class exists in CSS module', rule, {
+    valid: [
+      // { container, button } both defined in button.module.css
+      {
+        filename: fixtureFile,
+        code: `import { container, button } from './button.module.css';`,
+      },
+      // renamed local binding: imported name is still 'container'
+      {
+        filename: fixtureFile,
+        code: `import { container as wrapper } from './button.module.css';`,
+      },
+      // mixed default + named — both valid
+      {
+        filename: fixtureFile,
+        code: `
+          import styles, { container } from './button.module.css';
+          const a = styles.button;
+        `,
+      },
+    ],
+    invalid: [],
+  });
+
+  ruleTester.run('named imports — class missing from CSS module', rule, {
+    valid: [],
+    invalid: [
+      // 'ghost' is not in button.module.css
+      {
+        filename: fixtureFile,
+        code: `import { ghost } from './button.module.css';`,
+        errors: [
+          {
+            messageId: 'undefinedClass',
+            data: {
+              className: 'ghost',
+              moduleFile: join(fixturesDir, 'button.module.css'),
+            },
+          },
+        ],
+      },
+      // renamed binding: the imported name 'ghost' still doesn't exist
+      {
+        filename: fixtureFile,
+        code: `import { ghost as g } from './button.module.css';`,
+        errors: [
+          {
+            messageId: 'undefinedClass',
+            data: {
+              className: 'ghost',
+              moduleFile: join(fixturesDir, 'button.module.css'),
+            },
+          },
+        ],
+      },
+      // one valid, one invalid in the same import
+      {
+        filename: fixtureFile,
+        code: `import { container, ghost } from './button.module.css';`,
+        errors: [
+          {
+            messageId: 'undefinedClass',
+            data: {
+              className: 'ghost',
+              moduleFile: join(fixturesDir, 'button.module.css'),
+            },
+          },
+        ],
+      },
+      // mixed default + named — named specifier is invalid
+      {
+        filename: fixtureFile,
+        code: `
+          import styles, { ghost } from './button.module.css';
+          const a = styles.container;
+        `,
+        errors: [
+          {
+            messageId: 'undefinedClass',
+            data: {
+              className: 'ghost',
+              moduleFile: join(fixturesDir, 'button.module.css'),
+            },
+          },
+        ],
+      },
+    ],
+  });
+
+  ruleTester.run('named imports — localsConvention: camelCase', rule, {
+    valid: [
+      // 'my-button' exists in kebab.module.css; camelCase alias 'myButton' is also valid
+      {
+        filename: fixtureFile,
+        code: `import { myButton } from './kebab.module.css';`,
+        options: [{ localsConvention: 'camelCase' }],
+      },
+    ],
+    invalid: [
+      {
+        filename: fixtureFile,
+        code: `import { ghost } from './kebab.module.css';`,
+        options: [{ localsConvention: 'camelCase' }],
+        errors: [
+          {
+            messageId: 'undefinedClass',
+            data: {
+              className: 'ghost',
+              moduleFile: join(fixturesDir, 'kebab.module.css'),
+            },
+          },
+        ],
+      },
+    ],
+  });
 });
