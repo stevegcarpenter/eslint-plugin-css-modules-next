@@ -55,12 +55,40 @@ const rule: Rule.RuleModule = {
         const currentFileDir = dirname(context.filename);
         const absoluteCssPath = resolve(currentFileDir, resolvedCssPath);
 
+        let definedClasses: Set<string> | null | undefined;
+
         for (const specifier of node.specifiers) {
           if (
             specifier.type === 'ImportDefaultSpecifier' ||
             specifier.type === 'ImportNamespaceSpecifier'
           ) {
             cssModuleImports.set(specifier.local.name, absoluteCssPath);
+          } else if (specifier.type === 'ImportSpecifier') {
+            if (definedClasses === undefined) {
+              if (!existsSync(absoluteCssPath)) {
+                definedClasses = null;
+              } else {
+                const raw = extractClassNames(absoluteCssPath);
+                definedClasses = raw
+                  ? expandClassNames(raw, localsConvention)
+                  : null;
+              }
+            }
+            if (!definedClasses) continue;
+            const importedName =
+              specifier.imported.type === 'Identifier'
+                ? specifier.imported.name
+                : (specifier.imported.value as string);
+            if (!definedClasses.has(importedName)) {
+              context.report({
+                node: specifier.imported,
+                messageId: 'undefinedClass',
+                data: {
+                  className: importedName,
+                  moduleFile: absoluteCssPath,
+                },
+              });
+            }
           }
         }
       },
