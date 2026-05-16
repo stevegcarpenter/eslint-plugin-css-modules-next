@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-05-16
+
+### Added
+- Named import support in both rules. `import { foo, bar } from './styles.module.css'` is now validated: `no-undefined-class` reports any imported name that does not exist in the CSS file, and `no-unused-class` counts each named import specifier as a class usage.
+- Destructuring support in `no-unused-class`. Destructured keys in `const { foo, bar } = styles` are now tracked as class usages, so they no longer trigger false-positive "unused class" reports.
+
 ## [1.2.0] - 2026-05-11
 
 ### Fixed
