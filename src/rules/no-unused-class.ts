@@ -1,15 +1,12 @@
-import { existsSync } from 'fs';
 import { dirname, resolve } from 'path';
 
 import type { JSSyntaxElement, Rule } from 'eslint';
 
 import type { LocalsConvention } from '../types';
 import { localsConventionSchema } from '../types';
-import {
-  extractClassNames,
-  isClassUsed,
-  resolveCssModulePath,
-} from '../utils/css-parser';
+import { getCachedClassNames } from '../utils/css-cache';
+import { isClassUsed, resolveCssModulePath } from '../utils/css-parser';
+import { applyCacheSettings } from '../utils/settings';
 
 /**
  * Reports when a CSS module file contains class definitions that are never
@@ -37,6 +34,8 @@ const rule: Rule.RuleModule = {
   },
 
   create(context) {
+    applyCacheSettings(context);
+
     const options = (context.options[0] ?? {}) as {
       localsConvention?: LocalsConvention;
     };
@@ -139,9 +138,7 @@ const rule: Rule.RuleModule = {
           absolutePath,
           { importNode, usedClasses },
         ] of cssModulesByPath) {
-          if (!existsSync(absolutePath)) continue;
-
-          const definedClasses = extractClassNames(absolutePath);
+          const definedClasses = getCachedClassNames(absolutePath);
           if (!definedClasses) continue;
 
           for (const className of definedClasses) {

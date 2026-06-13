@@ -78,6 +78,27 @@ export default [
 ];
 ```
 
+## Settings
+
+These rules read each CSS module file from disk and parse it to determine its class names. To avoid re-parsing the same file repeatedly (a component with many `styles.x` accesses, and both rules running over the same file), parsed results are cached per file and reused across rules and files within a lint run. Each cache entry is automatically invalidated when the CSS file's modification time changes, so long-running editor/LSP sessions stay correct when a CSS file is edited between lint passes.
+
+The cache is bounded by a small LRU to keep memory flat in long-lived sessions. The default holds **15** files, which comfortably covers typical single-file editor linting. Override it via the shared `settings` object if you run large batch lints and want more cross-file reuse:
+
+```js
+// eslint.config.js
+export default [
+  {
+    settings: {
+      'css-modules-next': { cacheSize: 15 },
+    },
+  },
+];
+```
+
+Set `cacheSize: 0` to disable caching entirely (every lookup re-parses from disk). `cacheSize` is plugin-wide (shared by every rule) rather than a per-rule option, which is why it lives under `settings`. Non-numeric values are ignored. The cap only affects performance — neither eviction nor disabling changes lint results.
+
+Caching is a meaningful speedup since parsing is the dominant cost and scales with the number of class accesses: linting a 150-class / 150-access component (both rules enabled) benchmarks at ~31 ms/lint without caching versus ~1.6–1.8 ms/lint with it — roughly a 17–19× improvement.
+
 ## Rules
 
 Errors are surfaced inline in your editor when using the ESLint Extension:
