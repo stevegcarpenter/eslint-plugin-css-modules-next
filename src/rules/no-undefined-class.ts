@@ -1,15 +1,12 @@
-import { existsSync } from 'fs';
 import { dirname, resolve } from 'path';
 
 import type { Rule } from 'eslint';
 
 import type { LocalsConvention } from '../types';
 import { localsConventionSchema } from '../types';
-import {
-  expandClassNames,
-  extractClassNames,
-  resolveCssModulePath,
-} from '../utils/css-parser';
+import { getCachedClassNames } from '../utils/css-cache';
+import { expandClassNames, resolveCssModulePath } from '../utils/css-parser';
+import { applyCacheSettings } from '../utils/settings';
 
 /**
  * Reports when a CSS class is accessed from a CSS module import but the class
@@ -37,6 +34,8 @@ const rule: Rule.RuleModule = {
   },
 
   create(context) {
+    applyCacheSettings(context);
+
     const options = (context.options[0] ?? {}) as {
       localsConvention?: LocalsConvention;
     };
@@ -45,6 +44,19 @@ const rule: Rule.RuleModule = {
 
     // Map of local import identifier → resolved CSS module file path
     const cssModuleImports = new Map<string, string>();
+
+    // Per-file memo of the *expanded* class set (localsConvention is fixed for
+    // this invocation), backed by the cross-file mtime-validated cache.
+    const expandedByPath = new Map<string, Set<string> | null>();
+    function getExpanded(absoluteCssPath: string): Set<string> | null {
+      if (expandedByPath.has(absoluteCssPath)) {
+        return expandedByPath.get(absoluteCssPath)!;
+      }
+      const raw = getCachedClassNames(absoluteCssPath);
+      const expanded = raw ? expandClassNames(raw, localsConvention) : null;
+      expandedByPath.set(absoluteCssPath, expanded);
+      return expanded;
+    }
 
     return {
       ImportDeclaration(node) {
@@ -56,8 +68,6 @@ const rule: Rule.RuleModule = {
         const currentFileDir = dirname(context.filename);
         const absoluteCssPath = resolve(currentFileDir, resolvedCssPath);
 
-        let definedClasses: Set<string> | null | undefined;
-
         for (const specifier of node.specifiers) {
           if (
             specifier.type === 'ImportDefaultSpecifier' ||
@@ -65,16 +75,7 @@ const rule: Rule.RuleModule = {
           ) {
             cssModuleImports.set(specifier.local.name, absoluteCssPath);
           } else if (specifier.type === 'ImportSpecifier') {
-            if (definedClasses === undefined) {
-              if (!existsSync(absoluteCssPath)) {
-                definedClasses = null;
-              } else {
-                const raw = extractClassNames(absoluteCssPath);
-                definedClasses = raw
-                  ? expandClassNames(raw, localsConvention)
-                  : null;
-              }
-            }
+            const definedClasses = getExpanded(absoluteCssPath);
             if (!definedClasses) continue;
             const importedName =
               specifier.imported.type === 'Identifier'
@@ -116,12 +117,8 @@ const rule: Rule.RuleModule = {
         }
         if (!accessedClass) return;
 
-        if (!existsSync(cssFilePath)) return;
-
-        const rawClasses = extractClassNames(cssFilePath);
-        if (!rawClasses) return;
-
-        const definedClasses = expandClassNames(rawClasses, localsConvention);
+        const definedClasses = getExpanded(cssFilePath);
+        if (!definedClasses) return;
 
         if (!definedClasses.has(accessedClass)) {
           context.report({
