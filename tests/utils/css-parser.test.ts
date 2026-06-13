@@ -466,10 +466,50 @@ describe('@keyframes', () => {
   });
 });
 
+// ─── @value declarations ─────────────────────────────────────────────────────
+
+describe('@value declarations', () => {
+  it('extracts inline @value names as module exports', () => {
+    expectClasses(
+      css`
+        @value primary: #333;
+        @value secondaryFont: 'Helvetica Neue', sans-serif;
+        .button {
+          color: primary;
+        }
+      `,
+      'primary',
+      'secondaryFont',
+      'button'
+    );
+  });
+
+  it('extracts multiple @value names from a single module', () => {
+    expectClasses(
+      css`
+        @value breakpointSm: 576px;
+        @value breakpointMd: 768px;
+        @value colorBrand: #0070f3;
+        .hero {
+          color: colorBrand;
+        }
+        .aside {
+          width: breakpointSm;
+        }
+      `,
+      'breakpointSm',
+      'breakpointMd',
+      'colorBrand',
+      'hero',
+      'aside'
+    );
+  });
+});
+
 // ─── :export blocks ──────────────────────────────────────────────────────────
 
 describe(':export blocks', () => {
-  it('does not extract :export property names as CSS classes', () => {
+  it('extracts :export property names as module exports', () => {
     expectClasses(
       css`
         .bar {
@@ -479,11 +519,12 @@ describe(':export blocks', () => {
           myProp: something;
         }
       `,
-      'bar'
+      'bar',
+      'myProp'
     );
   });
 
-  it('handles multiple :export properties without extracting them', () => {
+  it('extracts multiple :export property names alongside class names', () => {
     expectClasses(
       css`
         .bar {
@@ -494,7 +535,45 @@ describe(':export blocks', () => {
           anotherProp: else;
         }
       `,
-      'bar'
+      'bar',
+      'otherProp',
+      'anotherProp'
+    );
+  });
+
+  it('extracts :export property names when no class selector is present', () => {
+    expectClasses(
+      css`
+        :export {
+          mainColor: #ff0000;
+          accentColor: #0000ff;
+        }
+        .button {
+          color: red;
+        }
+      `,
+      'mainColor',
+      'accentColor',
+      'button'
+    );
+  });
+
+  it('extracts both @value and :export names when mixed in the same file', () => {
+    expectClasses(
+      css`
+        @value brandBlue: #0070f3;
+        :export {
+          theme: light;
+          version: 2;
+        }
+        .card {
+          border-color: brandBlue;
+        }
+      `,
+      'brandBlue',
+      'theme',
+      'version',
+      'card'
     );
   });
 });
@@ -625,6 +704,90 @@ describe(':global() selectors', () => {
       'MesButton-label',
       'Table-root',
       'Accordion-root'
+    );
+  });
+
+  it('does not extract classes after bare :global (space form)', () => {
+    expectClasses(
+      css`
+        .local {
+          color: red;
+        }
+        :global .globalClass {
+          color: blue;
+        }
+      `,
+      'local'
+    );
+  });
+
+  it('does not extract any class from a :global space-form descendant selector', () => {
+    expectClasses(
+      css`
+        .button {
+          padding: 8px;
+        }
+        :global .wrapper .inner {
+          color: blue;
+        }
+        .label {
+          font-size: 14px;
+        }
+      `,
+      'button',
+      'label'
+    );
+  });
+
+  it('extracts :local() class re-localized inside a :global {} block', () => {
+    expectClasses(
+      css`
+        :global {
+          :local(.reLocalizedClass) {
+            color: red;
+          }
+        }
+        .alwaysLocal {
+          color: green;
+        }
+      `,
+      'reLocalizedClass',
+      'alwaysLocal'
+    );
+  });
+});
+
+// ─── attribute selectors ─────────────────────────────────────────────────────
+
+describe('attribute selectors', () => {
+  it('does not extract class-like strings from attribute selector values', () => {
+    expectClasses(
+      css`
+        .button {
+          color: red;
+        }
+        a[href='.notAClass'] {
+          color: blue;
+        }
+      `,
+      'button'
+    );
+  });
+
+  it('does not extract phantom classes from multiple attribute selectors', () => {
+    expectClasses(
+      css`
+        .link {
+          display: inline;
+        }
+        input[class='.fakeA'][data-value='.fakeB'] {
+          border: none;
+        }
+        [title~='.fakeC'] {
+          font-style: italic;
+        }
+      `,
+      'link'
     );
   });
 });

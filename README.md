@@ -27,6 +27,18 @@ Classes defined in nested rules are each tracked as independent local class name
 **`@keyframes` blocks**
 Animation names in `@keyframes` are never treated as CSS class names. A stylesheet that defines `@keyframes spin { }` and uses `animation: spin 1s infinite` will not report `spin` as a defined or unused class.
 
+**`:global` and `:local` scoping**
+All three forms of `:global` are correctly handled: the function form (`:global(.Foo)`), the space form (`:global .Foo { }`), and the block form (`:global { .Foo { } }`) each exclude their nested classes from the module's local export set. Within a `:global { }` block, `:local(.foo)` re-enables local scope and the class is included as an export.
+
+**`@value` declarations**
+Named values exported via `@value name: value;` are included as valid module exports. `styles.name` backed by a `@value` declaration is treated the same as a class name — the plugin validates both.
+
+**`:export` blocks**
+Properties declared inside `:export { }` (the ICSS mechanism for publishing arbitrary values from a CSS module) are included as valid exports. `styles.myProp` backed by `:export { myProp: something; }` is treated the same as a class name.
+
+**Attribute selectors**
+Class-like strings that appear as attribute selector values — for example `a[href=".notAClass"]` — are stripped before parsing so they never produce phantom class names.
+
 ## Installation
 
 ```sh

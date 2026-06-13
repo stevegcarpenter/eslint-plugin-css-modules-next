@@ -12,8 +12,11 @@ import type { LocalsConvention } from '../types';
  *
  * Walks up the parent chain looking for an ancestor rule whose selector
  * contains `:global` in block form (i.e. NOT the `:global(...)` function form).
+ * Returns false when the rule itself re-enables local scope via `:local(...)`.
  */
 function isInsideGlobalBlock(rule: postcss.Rule): boolean {
+  if (/:local\(/.test(rule.selector)) return false;
+
   let parent = rule.parent;
   while (parent && parent.type !== 'root') {
     if (
@@ -64,10 +67,38 @@ export function parseClassNames(
 
   const classNames = new Set<string>();
 
+  // @value names are valid module exports accessible as styles.name in JS.
+  root.walkAtRules('value', (atRule) => {
+    const params = atRule.params.trim();
+    const fromIdx = params.search(/\bfrom\b/);
+    if (fromIdx !== -1) {
+      // import form: "name1, name2 from '...'" — extract names before 'from'
+      for (const segment of params.slice(0, fromIdx).split(',')) {
+        const name = segment.trim();
+        if (/^[a-zA-Z_][a-zA-Z0-9_-]*$/.test(name)) classNames.add(name);
+      }
+    } else {
+      // inline form: "name: value" — extract name before the colon
+      const name = params.split(':')[0].trim();
+      if (/^[a-zA-Z_][a-zA-Z0-9_-]*$/.test(name)) classNames.add(name);
+    }
+  });
+
   root.walkRules((rule) => {
+    // :export { prop: value } blocks expose named values as module exports.
+    if (rule.selector === ':export') {
+      rule.walkDecls((decl) => {
+        classNames.add(decl.prop);
+      });
+      return;
+    }
+
     if (isInsideGlobalBlock(rule)) return;
 
-    const localSelector = rule.selector.replace(/:global\([^)]*\)/g, '');
+    const localSelector = rule.selector
+      .replace(/:global\([^)]*\)/g, '') // strip :global(...) function form
+      .replace(/:global(?!\()[^,]*/g, '') // strip :global space form up to next comma
+      .replace(/\[[^\]]*\]/g, ''); // strip attribute selectors [attr=...]
 
     const matches = localSelector.matchAll(/\.([a-zA-Z_][a-zA-Z0-9_-]*)/g);
     for (const match of matches) {
