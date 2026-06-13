@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-06-13
+
+### Added
+- Configurable parse cache via the plugin-wide `settings['css-modules-next'].cacheSize` setting. Parsed CSS module class sets are now cached across both rules and across files, keyed on file `mtime` so edits are picked up correctly in long-running editor/LSP sessions. The cache is a bounded LRU (default 15 entries); setting `cacheSize` to `0` disables caching entirely. Benchmarked at ~17–19× faster on a 150-class / 150-access component (#20).
+- `@value` declarations are now recognised as module exports and validated as class names in both rules. Both the inline form (`@value foo: ...`) and the import form (`@value foo, bar from '...'`) are supported (#19).
+- `:export { ... }` blocks are now recognised, exposing their declared property names as module exports (#19).
+- `:local(...)` selectors now correctly re-enable local scope inside a `:global { }` block, so locally-scoped classes nested under a global block are no longer dropped (#19).
+
+### Fixed
+- Parser now aligns with PostCSS for the space form of `:global` (e.g. `:global .foo`) and for attribute selectors (e.g. `.foo[data-x]`), preventing class names from being mis-extracted from these selectors (#19).
+
 ## [1.3.1] - 2026-06-04
 
 ### Changed
