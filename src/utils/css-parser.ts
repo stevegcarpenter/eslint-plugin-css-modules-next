@@ -5,7 +5,7 @@ import postcss from 'postcss';
 import { parse as parseLess } from 'postcss-less';
 import { parse as parseScss } from 'postcss-scss';
 
-import type { LocalsConvention } from '../types';
+import type { ClassLocation, LocalsConvention } from '../types';
 
 /**
  * Check whether a PostCSS rule node is nested inside a `:global { }` block.
@@ -31,6 +31,94 @@ function isInsideGlobalBlock(rule: postcss.Rule): boolean {
 }
 
 /**
+ * Read the 1-based source position of a PostCSS node. Parsed nodes always carry
+ * a `source.start`; the fallback to `{ line: 0, column: 0 }` only guards against
+ * synthesized nodes, and callers treat `line === 0` as "position unknown".
+ */
+function nodeLocation(node: postcss.Node): ClassLocation {
+  const start = node.source?.start;
+  return start
+    ? { line: start.line, column: start.column }
+    : { line: 0, column: 0 };
+}
+
+/**
+ * Parses a CSS/SCSS/LESS string and returns a map of every *local* class name to
+ * the source position where it is first defined. The first definition wins, so
+ * a class repeated across selectors points at its earliest occurrence.
+ *
+ * Returns `null` when the content cannot be parsed (e.g. corrupt content), so
+ * callers can skip reporting rather than producing false positives.
+ *
+ * Scoping behaviors (`:global`, `:local`, `@value`, `:export`, pseudo-class
+ * functions, `@keyframes`, attribute selectors) match {@link parseClassNames} —
+ * see that function's documentation for the full set of rules.
+ */
+export function parseClassLocations(
+  css: string,
+  syntax: 'css' | 'scss' | 'less' = 'css'
+): Map<string, ClassLocation> | null {
+  let root: postcss.Root;
+  try {
+    if (syntax === 'less') {
+      root = parseLess(css);
+    } else if (syntax === 'scss') {
+      root = parseScss(css);
+    } else {
+      root = postcss.parse(css);
+    }
+  } catch {
+    return null;
+  }
+
+  const locations = new Map<string, ClassLocation>();
+  const record = (name: string, node: postcss.Node): void => {
+    if (!locations.has(name)) locations.set(name, nodeLocation(node));
+  };
+
+  // @value names are valid module exports accessible as styles.name in JS.
+  root.walkAtRules('value', (atRule) => {
+    const params = atRule.params.trim();
+    const fromIdx = params.search(/\bfrom\b/);
+    if (fromIdx !== -1) {
+      // import form: "name1, name2 from '...'" — extract names before 'from'
+      for (const segment of params.slice(0, fromIdx).split(',')) {
+        const name = segment.trim();
+        if (/^[a-zA-Z_][a-zA-Z0-9_-]*$/.test(name)) record(name, atRule);
+      }
+    } else {
+      // inline form: "name: value" — extract name before the colon
+      const name = params.split(':')[0].trim();
+      if (/^[a-zA-Z_][a-zA-Z0-9_-]*$/.test(name)) record(name, atRule);
+    }
+  });
+
+  root.walkRules((rule) => {
+    // :export { prop: value } blocks expose named values as module exports.
+    if (rule.selector === ':export') {
+      rule.walkDecls((decl) => {
+        record(decl.prop, decl);
+      });
+      return;
+    }
+
+    if (isInsideGlobalBlock(rule)) return;
+
+    const localSelector = rule.selector
+      .replace(/:global\([^)]*\)/g, '') // strip :global(...) function form
+      .replace(/:global(?!\()[^,]*/g, '') // strip :global space form up to next comma
+      .replace(/\[[^\]]*\]/g, ''); // strip attribute selectors [attr=...]
+
+    const matches = localSelector.matchAll(/\.([a-zA-Z_][a-zA-Z0-9_-]*)/g);
+    for (const match of matches) {
+      record(match[1], rule);
+    }
+  });
+
+  return locations;
+}
+
+/**
  * Parses a CSS/SCSS/LESS string and returns all *local* class names.
  *
  * Returns `null` when the content cannot be parsed (e.g. corrupt content), so
@@ -47,66 +135,35 @@ function isInsideGlobalBlock(rule: postcss.Rule): boolean {
  *   they are valid local class names in CSS Modules.
  * - `@keyframes` block names are never extracted (they are not class selectors).
  * - `:export { }` blocks contain no class selectors so nothing is extracted.
+ *
+ * This is a thin projection of {@link parseClassLocations} that discards the
+ * source positions.
  */
 export function parseClassNames(
   css: string,
   syntax: 'css' | 'scss' | 'less' = 'css'
 ): Set<string> | null {
-  let root: postcss.Root;
-  try {
-    if (syntax === 'less') {
-      root = parseLess(css);
-    } else if (syntax === 'scss') {
-      root = parseScss(css);
-    } else {
-      root = postcss.parse(css);
-    }
-  } catch {
-    return null;
-  }
+  const locations = parseClassLocations(css, syntax);
+  return locations && new Set(locations.keys());
+}
 
-  const classNames = new Set<string>();
+function detectSyntax(filePath: string): 'css' | 'scss' | 'less' {
+  const ext = extname(filePath).toLowerCase();
+  if (ext === '.less') return 'less';
+  if (ext === '.scss') return 'scss';
+  return 'css';
+}
 
-  // @value names are valid module exports accessible as styles.name in JS.
-  root.walkAtRules('value', (atRule) => {
-    const params = atRule.params.trim();
-    const fromIdx = params.search(/\bfrom\b/);
-    if (fromIdx !== -1) {
-      // import form: "name1, name2 from '...'" — extract names before 'from'
-      for (const segment of params.slice(0, fromIdx).split(',')) {
-        const name = segment.trim();
-        if (/^[a-zA-Z_][a-zA-Z0-9_-]*$/.test(name)) classNames.add(name);
-      }
-    } else {
-      // inline form: "name: value" — extract name before the colon
-      const name = params.split(':')[0].trim();
-      if (/^[a-zA-Z_][a-zA-Z0-9_-]*$/.test(name)) classNames.add(name);
-    }
-  });
-
-  root.walkRules((rule) => {
-    // :export { prop: value } blocks expose named values as module exports.
-    if (rule.selector === ':export') {
-      rule.walkDecls((decl) => {
-        classNames.add(decl.prop);
-      });
-      return;
-    }
-
-    if (isInsideGlobalBlock(rule)) return;
-
-    const localSelector = rule.selector
-      .replace(/:global\([^)]*\)/g, '') // strip :global(...) function form
-      .replace(/:global(?!\()[^,]*/g, '') // strip :global space form up to next comma
-      .replace(/\[[^\]]*\]/g, ''); // strip attribute selectors [attr=...]
-
-    const matches = localSelector.matchAll(/\.([a-zA-Z_][a-zA-Z0-9_-]*)/g);
-    for (const match of matches) {
-      classNames.add(match[1]);
-    }
-  });
-
-  return classNames;
+/**
+ * Reads a CSS/SCSS/LESS module file from disk and returns a map of each local
+ * class name to its source position. Returns `null` when the file cannot be
+ * parsed.
+ */
+export function extractClassLocations(
+  filePath: string
+): Map<string, ClassLocation> | null {
+  const content = readFileSync(filePath, 'utf-8');
+  return parseClassLocations(content, detectSyntax(filePath));
 }
 
 /**
@@ -114,14 +171,8 @@ export function parseClassNames(
  * Returns `null` when the file cannot be parsed.
  */
 export function extractClassNames(filePath: string): Set<string> | null {
-  const ext = extname(filePath).toLowerCase();
-  const content = readFileSync(filePath, 'utf-8');
-
-  let syntax: 'css' | 'scss' | 'less' = 'css';
-  if (ext === '.less') syntax = 'less';
-  else if (ext === '.scss') syntax = 'scss';
-
-  return parseClassNames(content, syntax);
+  const locations = extractClassLocations(filePath);
+  return locations && new Set(locations.keys());
 }
 
 /**

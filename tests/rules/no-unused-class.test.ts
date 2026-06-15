@@ -1,4 +1,4 @@
-import { dirname, join } from 'path';
+import { dirname, join, relative } from 'path';
 import { fileURLToPath } from 'url';
 
 import { RuleTester } from 'eslint';
@@ -12,6 +12,11 @@ const fixturesDir = join(
   'fixtures'
 );
 const fixtureFile = join(fixturesDir, 'Button.tsx');
+
+// The rule reports CSS paths relative to context.cwd, which RuleTester leaves at
+// process.cwd(); mirror that here so message assertions stay environment-stable.
+const relFixture = (name: string) =>
+  relative(process.cwd(), join(fixturesDir, name));
 
 // RuleTester.run() creates its own describe/it blocks internally, so it must
 // be called at the top level of a describe, not inside an it().
@@ -79,7 +84,8 @@ describe('no-unused-class', () => {
             messageId: 'unusedClass',
             data: {
               className: 'unused',
-              moduleFile: join(fixturesDir, 'button.module.css'),
+              moduleFile: relFixture('button.module.css'),
+              line: '11',
             },
           },
         ],
@@ -97,7 +103,8 @@ describe('no-unused-class', () => {
             messageId: 'unusedClass',
             data: {
               className: 'unused',
-              moduleFile: join(fixturesDir, 'button.module.css'),
+              moduleFile: relFixture('button.module.css'),
+              line: '11',
             },
           },
         ],
@@ -142,7 +149,8 @@ describe('no-unused-class', () => {
             messageId: 'unusedClass',
             data: {
               className: 'body',
-              moduleFile: join(fixturesDir, 'card.module.css'),
+              moduleFile: relFixture('card.module.css'),
+              line: '11',
             },
           },
         ],
@@ -184,7 +192,8 @@ describe('no-unused-class', () => {
             messageId: 'unusedClass',
             data: {
               className: 'body',
-              moduleFile: join(fixturesDir, 'card.module.scss'),
+              moduleFile: relFixture('card.module.scss'),
+              line: '10',
             },
           },
         ],
@@ -269,14 +278,16 @@ styles.localClass;`,
             messageId: 'unusedClass',
             data: {
               className: 'my-button',
-              moduleFile: join(fixturesDir, 'kebab.module.css'),
+              moduleFile: relFixture('kebab.module.css'),
+              line: '1',
             },
           },
           {
             messageId: 'unusedClass',
             data: {
               className: 'my-button--primary',
-              moduleFile: join(fixturesDir, 'kebab.module.css'),
+              moduleFile: relFixture('kebab.module.css'),
+              line: '6',
             },
           },
         ],
@@ -328,14 +339,16 @@ styles.localClass;`,
               messageId: 'unusedClass',
               data: {
                 className: 'my-button--primary',
-                moduleFile: join(fixturesDir, 'kebab.module.css'),
+                moduleFile: relFixture('kebab.module.css'),
+                line: '6',
               },
             },
             {
               messageId: 'unusedClass',
               data: {
                 className: 'icon',
-                moduleFile: join(fixturesDir, 'kebab.module.css'),
+                moduleFile: relFixture('kebab.module.css'),
+                line: '15',
               },
             },
           ],
@@ -379,14 +392,16 @@ styles.localClass;`,
               messageId: 'unusedClass',
               data: {
                 className: 'my-button',
-                moduleFile: join(fixturesDir, 'kebab.module.css'),
+                moduleFile: relFixture('kebab.module.css'),
+                line: '1',
               },
             },
             {
               messageId: 'unusedClass',
               data: {
                 className: 'my-button--primary',
-                moduleFile: join(fixturesDir, 'kebab.module.css'),
+                moduleFile: relFixture('kebab.module.css'),
+                line: '6',
               },
             },
           ],
@@ -433,7 +448,8 @@ styles.localClass;`,
             messageId: 'unusedClass',
             data: {
               className: 'unused',
-              moduleFile: join(fixturesDir, 'button.module.css'),
+              moduleFile: relFixture('button.module.css'),
+              line: '11',
             },
           },
         ],
@@ -447,14 +463,16 @@ styles.localClass;`,
             messageId: 'unusedClass',
             data: {
               className: 'button',
-              moduleFile: join(fixturesDir, 'button.module.css'),
+              moduleFile: relFixture('button.module.css'),
+              line: '6',
             },
           },
           {
             messageId: 'unusedClass',
             data: {
               className: 'unused',
-              moduleFile: join(fixturesDir, 'button.module.css'),
+              moduleFile: relFixture('button.module.css'),
+              line: '11',
             },
           },
         ],
@@ -511,7 +529,8 @@ styles.localClass;`,
             messageId: 'unusedClass',
             data: {
               className: 'unused',
-              moduleFile: join(fixturesDir, 'button.module.css'),
+              moduleFile: relFixture('button.module.css'),
+              line: '11',
             },
           },
         ],
@@ -535,21 +554,24 @@ styles.localClass;`,
             messageId: 'unusedClass',
             data: {
               className: 'container',
-              moduleFile: join(fixturesDir, 'button.module.css'),
+              moduleFile: relFixture('button.module.css'),
+              line: '1',
             },
           },
           {
             messageId: 'unusedClass',
             data: {
               className: 'button',
-              moduleFile: join(fixturesDir, 'button.module.css'),
+              moduleFile: relFixture('button.module.css'),
+              line: '6',
             },
           },
           {
             messageId: 'unusedClass',
             data: {
               className: 'unused',
-              moduleFile: join(fixturesDir, 'button.module.css'),
+              moduleFile: relFixture('button.module.css'),
+              line: '11',
             },
           },
         ],

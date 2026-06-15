@@ -4,6 +4,16 @@ export interface CssModuleInfo {
 }
 
 /**
+ * Source position of a class definition within its CSS module file, as reported
+ * by PostCSS. `line` and `column` are 1-based. Used to make diagnostics point at
+ * the CSS, since ESLint can only place the report itself in the linted JS file.
+ */
+export interface ClassLocation {
+  line: number;
+  column: number;
+}
+
+/**
  * Mirrors the css-loader / Vite `css.modules.localsConvention` setting so
  * that the lint rules understand how kebab-case CSS class names are exposed
  * to JavaScript at runtime.

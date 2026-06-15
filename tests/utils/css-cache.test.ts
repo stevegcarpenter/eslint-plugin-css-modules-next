@@ -6,6 +6,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 import {
   clearCache,
+  getCachedClassLocations,
   getCachedClassNames,
   setCacheLimit,
 } from '../../src/utils/css-cache';
@@ -68,6 +69,48 @@ describe('getCachedClassNames', () => {
     // Creating it afterwards must be picked up.
     write('does-not-exist.module.css', '.late {}', 1000);
     expect(getCachedClassNames(path)).toEqual(new Set(['late']));
+  });
+});
+
+describe('getCachedClassLocations', () => {
+  it('returns the parsed name → position map', () => {
+    const path = write('loc.module.css', '.foo {}\n.bar {}', 1000);
+    expect(getCachedClassLocations(path)).toEqual(
+      new Map([
+        ['foo', { line: 1, column: 1 }],
+        ['bar', { line: 2, column: 1 }],
+      ])
+    );
+  });
+
+  it('returns the same cached instance when the file is unchanged', () => {
+    const path = write('loc2.module.css', '.foo {}', 1000);
+    expect(getCachedClassLocations(path)).toBe(getCachedClassLocations(path));
+  });
+
+  it('is keyed consistently with getCachedClassNames (single parse)', () => {
+    const path = write('loc3.module.css', '.foo {}\n.bar {}', 1000);
+    const names = getCachedClassNames(path);
+    const locations = getCachedClassLocations(path);
+    expect(new Set(locations?.keys())).toEqual(names);
+  });
+
+  it('re-parses positions when the file changes', () => {
+    const path = write('loc4.module.css', '.foo {}', 1000);
+    expect(getCachedClassLocations(path)?.get('foo')).toEqual({
+      line: 1,
+      column: 1,
+    });
+
+    write('loc4.module.css', '\n.foo {}', 2000);
+    expect(getCachedClassLocations(path)?.get('foo')).toEqual({
+      line: 2,
+      column: 1,
+    });
+  });
+
+  it('returns null for a missing file', () => {
+    expect(getCachedClassLocations(join(dir, 'absent.module.css'))).toBeNull();
   });
 });
 
