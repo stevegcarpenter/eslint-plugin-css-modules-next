@@ -1,4 +1,4 @@
-import { dirname, resolve } from 'path';
+import { dirname, relative, resolve } from 'path';
 
 import type { Rule } from 'eslint';
 
@@ -90,7 +90,7 @@ const rule: Rule.RuleModule = {
                 messageId: 'undefinedClass',
                 data: {
                   className: importedName,
-                  moduleFile: absoluteCssPath,
+                  moduleFile: relative(context.cwd, absoluteCssPath),
                 },
               });
             }
@@ -126,7 +126,7 @@ const rule: Rule.RuleModule = {
             messageId: 'undefinedClass',
             data: {
               className: accessedClass,
-              moduleFile: cssFilePath,
+              moduleFile: relative(context.cwd, cssFilePath),
             },
           });
         }

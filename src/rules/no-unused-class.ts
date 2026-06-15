@@ -1,10 +1,10 @@
-import { dirname, resolve } from 'path';
+import { dirname, relative, resolve } from 'path';
 
 import type { JSSyntaxElement, Rule } from 'eslint';
 
 import type { LocalsConvention } from '../types';
 import { localsConventionSchema } from '../types';
-import { getCachedClassNames } from '../utils/css-cache';
+import { getCachedClassLocations } from '../utils/css-cache';
 import { isClassUsed, resolveCssModulePath } from '../utils/css-parser';
 import { applyCacheSettings } from '../utils/settings';
 
@@ -28,6 +28,9 @@ const rule: Rule.RuleModule = {
     },
     messages: {
       unusedClass:
+        'Class "{{className}}" in CSS module "{{moduleFile}}:{{line}}" is never used in this file.',
+      // Fallback for the rare case where PostCSS reports no source position.
+      unusedClassUnknownLocation:
         'Class "{{className}}" in CSS module "{{moduleFile}}" is never used in this file.',
     },
     schema: localsConventionSchema,
@@ -138,18 +141,32 @@ const rule: Rule.RuleModule = {
           absolutePath,
           { importNode, usedClasses },
         ] of cssModulesByPath) {
-          const definedClasses = getCachedClassNames(absolutePath);
+          const definedClasses = getCachedClassLocations(absolutePath);
           if (!definedClasses) continue;
 
-          for (const className of definedClasses) {
+          // Report the CSS path relative to the project root for readability.
+          const moduleFile = relative(context.cwd, absolutePath);
+
+          for (const [className, location] of definedClasses) {
             if (!isClassUsed(className, usedClasses, localsConvention)) {
+              // ESLint can only place the report on the import in the JS file,
+              // so we surface the CSS-side line in the message text instead.
+              const hasLocation = location.line > 0;
               context.report({
                 node: importNode,
-                messageId: 'unusedClass',
-                data: {
-                  className,
-                  moduleFile: absolutePath,
-                },
+                messageId: hasLocation
+                  ? 'unusedClass'
+                  : 'unusedClassUnknownLocation',
+                data: hasLocation
+                  ? {
+                      className,
+                      moduleFile,
+                      line: String(location.line),
+                    }
+                  : {
+                      className,
+                      moduleFile,
+                    },
               });
             }
           }

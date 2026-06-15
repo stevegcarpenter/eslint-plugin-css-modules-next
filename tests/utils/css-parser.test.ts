@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseClassNames } from '../../src/utils/css-parser';
+import {
+  parseClassLocations,
+  parseClassNames,
+} from '../../src/utils/css-parser';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -1040,5 +1043,72 @@ describe('edge cases', () => {
       'scss'
     );
     expect(result).toEqual(new Set(['root', 'selected']));
+  });
+});
+
+// ─── source locations ────────────────────────────────────────────────────────
+
+describe('parseClassLocations', () => {
+  it('records the 1-based line and column of each class definition', () => {
+    const result = parseClassLocations(
+      // line 1 is the leading newline of the template literal
+      `.container {
+  display: flex;
+}
+.button {
+  font-weight: bold;
+}`
+    );
+    expect(result?.get('container')).toEqual({ line: 1, column: 1 });
+    expect(result?.get('button')).toEqual({ line: 4, column: 1 });
+  });
+
+  it('points a class repeated across selectors at its first definition', () => {
+    const result = parseClassLocations(
+      `.foo {
+  color: red;
+}
+.bar .foo {
+  color: blue;
+}`
+    );
+    expect(result?.get('foo')).toEqual({ line: 1, column: 1 });
+  });
+
+  it('records positions for nested classes (native CSS nesting)', () => {
+    const result = parseClassLocations(
+      `.card {
+  .header {
+    font-weight: bold;
+  }
+}`
+    );
+    expect(result?.get('card')).toEqual({ line: 1, column: 1 });
+    expect(result?.get('header')).toEqual({ line: 2, column: 3 });
+  });
+
+  it('records positions for @value and :export names', () => {
+    const result = parseClassLocations(
+      `@value brand: #0070f3;
+.card {
+  color: brand;
+}
+:export {
+  theme: light;
+}`
+    );
+    expect(result?.get('brand')).toEqual({ line: 1, column: 1 });
+    expect(result?.get('theme')).toEqual({ line: 6, column: 3 });
+  });
+
+  it('returns null for unparsable CSS', () => {
+    expect(parseClassLocations('safslf f sf')).toBeNull();
+  });
+
+  it('has the same keys as parseClassNames', () => {
+    const input = `.foo {}\n.bar .baz {}`;
+    const names = parseClassNames(input);
+    const locations = parseClassLocations(input);
+    expect(new Set(locations?.keys())).toEqual(names);
   });
 });

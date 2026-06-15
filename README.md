@@ -133,7 +133,7 @@ Reports when a CSS class is accessed via dot notation on a CSS module import but
 import styles from './Button.module.css';
 
 <div className={styles.container} />  // OK
-<div className={styles.missing} />    // Error: 'missing' is not defined in Button.module.css
+<div className={styles.missing} />    // Error: Class "missing" is not defined in CSS module "Button.module.css".
 ```
 
 #### Options
@@ -181,7 +181,7 @@ import styles from './Button.module.css';
 <div className={styles.container}>   // OK
   <span className={styles.label} />  // OK
 </div>
-// Error: 'deprecated' in Button.module.css is never used in this file
+// Error: Class "deprecated" in CSS module "Button.module.css:3" is never used in this file
 ```
 
 #### Options
