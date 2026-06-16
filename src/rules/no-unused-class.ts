@@ -6,7 +6,7 @@ import type { LocalsConvention } from '../types';
 import { localsConventionSchema } from '../types';
 import { getCachedClassLocations } from '../utils/css-cache';
 import { isClassUsed, resolveCssModulePath } from '../utils/css-parser';
-import { applyCacheSettings } from '../utils/settings';
+import { applyCacheSettings, resolveLocalsConvention } from '../utils/settings';
 
 /**
  * Reports when a CSS module file contains class definitions that are never
@@ -39,11 +39,7 @@ const rule: Rule.RuleModule = {
   create(context) {
     applyCacheSettings(context);
 
-    const options = (context.options[0] ?? {}) as {
-      localsConvention?: LocalsConvention;
-    };
-    const localsConvention: LocalsConvention =
-      options.localsConvention ?? 'asIs';
+    const localsConvention: LocalsConvention = resolveLocalsConvention(context);
 
     // Map CSS module path → { importNode, usedClasses }
     // Consolidates usages from member expressions, named imports, and destructuring.

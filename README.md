@@ -92,6 +92,34 @@ export default [
 
 ## Settings
 
+The shared `settings['css-modules-next']` block is plugin-wide configuration consumed by every rule. It currently holds two keys: `localsConvention` and `cacheSize`.
+
+### `localsConvention` (shared)
+
+Type: `"asIs" | "camelCase" | "camelCaseOnly"`
+Default: `"asIs"`
+
+`localsConvention` describes how your CSS modules bundler exports kebab-case class names to JavaScript, and it needs to be consistent across both rules. Rather than repeating it in each rule's options (where the two copies can silently drift), set it once in shared settings as a single source of truth:
+
+```js
+// eslint.config.js
+export default [
+  {
+    settings: {
+      'css-modules-next': { localsConvention: 'camelCase' },
+    },
+    rules: {
+      'css-modules-next/no-undefined-class': 'error',
+      'css-modules-next/no-unused-class': 'error',
+    },
+  },
+];
+```
+
+Precedence is: a rule's own `localsConvention` option (if set) wins; otherwise the shared `settings` value applies; otherwise the `"asIs"` default. So shared settings apply to every rule, while any single rule can still override the convention for itself. See each rule's [`localsConvention` option](#localsconvention) for the meaning of each value.
+
+### `cacheSize` (shared)
+
 These rules read each CSS module file from disk and parse it to determine its class names. To avoid re-parsing the same file repeatedly (a component with many `styles.x` accesses, and both rules running over the same file), parsed results are cached per file and reused across rules and files within a lint run. Each cache entry is automatically invalidated when the CSS file's modification time changes, so long-running editor/LSP sessions stay correct when a CSS file is edited between lint passes.
 
 The cache is bounded by a small LRU to keep memory flat in long-lived sessions. The default holds **15** files, which comfortably covers typical single-file editor linting. Override it via the shared `settings` object if you run large batch lints and want more cross-file reuse:
@@ -160,6 +188,8 @@ export default [
 ];
 ```
 
+> Prefer setting `localsConvention` once in [shared settings](#localsconvention-shared) so it stays in sync with `no-unused-class`. The per-rule option above overrides the shared value for this rule only.
+
 ---
 
 ### `css-modules-next/no-unused-class`
@@ -207,6 +237,8 @@ export default [
   },
 ];
 ```
+
+> Prefer setting `localsConvention` once in [shared settings](#localsconvention-shared) so it stays in sync with `no-undefined-class`. The per-rule option above overrides the shared value for this rule only.
 
 ---
 
