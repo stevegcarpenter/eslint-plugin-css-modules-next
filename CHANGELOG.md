@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2026-06-15
+
+### Added
+- Shared `settings['css-modules-next'].localsConvention` setting as a single source of truth for `localsConvention` across both rules, avoiding per-rule duplication that could silently drift. Resolution precedence is: the rule's own `localsConvention` option, then the shared setting, then the `'asIs'` default — so a per-rule option overrides the shared value for that rule (#23).
+- `no-unused-class` now reports the CSS-side source location of an unused class, e.g. `Class "x" in CSS module "src/Foo.module.css:14" is never used in this file`. Each class's PostCSS source position is parsed alongside its name and threaded through the cache (#22).
+
+### Changed
+- Both rules now report CSS module paths relative to the project root (`path.relative(context.cwd, ...)`) instead of as absolute paths (#22).
+
 ## [1.4.0] - 2026-06-13
 
 ### Added
