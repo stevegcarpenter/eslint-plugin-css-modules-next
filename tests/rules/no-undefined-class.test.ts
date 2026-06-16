@@ -297,7 +297,7 @@ describe('no-undefined-class', () => {
             messageId: 'undefinedClass',
             data: {
               className: 'my-button',
-              moduleFile: join(fixturesDir, 'kebab.module.css'),
+              moduleFile: relFixture('kebab.module.css'),
             },
           },
         ],
@@ -317,7 +317,7 @@ describe('no-undefined-class', () => {
             messageId: 'undefinedClass',
             data: {
               className: 'myButton',
-              moduleFile: join(fixturesDir, 'kebab.module.css'),
+              moduleFile: relFixture('kebab.module.css'),
             },
           },
         ],
