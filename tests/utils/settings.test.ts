@@ -10,7 +10,10 @@ import {
   getCachedClassNames,
   setCacheLimit,
 } from '../../src/utils/css-cache';
-import { applyCacheSettings } from '../../src/utils/settings';
+import {
+  applyCacheSettings,
+  resolveLocalsConvention,
+} from '../../src/utils/settings';
 
 let dir: string;
 
@@ -74,5 +77,55 @@ describe('applyCacheSettings', () => {
   it('does not throw when settings are absent', () => {
     expect(() => applyCacheSettings(contextWith({}))).not.toThrow();
     expect(() => applyCacheSettings(contextWith(undefined))).not.toThrow();
+  });
+});
+
+/** Build a minimal RuleContext carrying rule options and shared settings. */
+function contextWithOptions(
+  options: unknown[],
+  settings: unknown
+): Rule.RuleContext {
+  return { options, settings } as Rule.RuleContext;
+}
+
+describe('resolveLocalsConvention', () => {
+  it('defaults to asIs when nothing is configured', () => {
+    expect(resolveLocalsConvention(contextWithOptions([], {}))).toBe('asIs');
+    expect(resolveLocalsConvention(contextWithOptions([], undefined))).toBe(
+      'asIs'
+    );
+  });
+
+  it('applies the shared settings value to all rules', () => {
+    const ctx = contextWithOptions([], {
+      'css-modules-next': { localsConvention: 'camelCase' },
+    });
+    expect(resolveLocalsConvention(ctx)).toBe('camelCase');
+  });
+
+  it('uses the per-rule option when only it is present', () => {
+    const ctx = contextWithOptions([{ localsConvention: 'camelCaseOnly' }], {});
+    expect(resolveLocalsConvention(ctx)).toBe('camelCaseOnly');
+  });
+
+  it('lets the per-rule option override shared settings', () => {
+    const ctx = contextWithOptions([{ localsConvention: 'camelCaseOnly' }], {
+      'css-modules-next': { localsConvention: 'camelCase' },
+    });
+    expect(resolveLocalsConvention(ctx)).toBe('camelCaseOnly');
+  });
+
+  it('falls back to shared settings when the rule option is invalid', () => {
+    const ctx = contextWithOptions([{ localsConvention: 'bogus' }], {
+      'css-modules-next': { localsConvention: 'camelCase' },
+    });
+    expect(resolveLocalsConvention(ctx)).toBe('camelCase');
+  });
+
+  it('ignores an invalid shared settings value', () => {
+    const ctx = contextWithOptions([], {
+      'css-modules-next': { localsConvention: 42 },
+    });
+    expect(resolveLocalsConvention(ctx)).toBe('asIs');
   });
 });

@@ -251,6 +251,75 @@ describe('no-undefined-class', () => {
     ],
   });
 
+  // ── shared settings['css-modules-next'].localsConvention ────────────────────
+
+  ruleTester.run('localsConvention via shared settings', rule, {
+    valid: [
+      // Shared settings alone apply camelCase to the rule.
+      {
+        filename: fixtureFile,
+        code: `
+          import styles from './kebab.module.css';
+          const a = styles.myButton;
+        `,
+        settings: { 'css-modules-next': { localsConvention: 'camelCase' } },
+      },
+      // Per-rule option overrides shared settings: rule says camelCaseOnly, so
+      // the camelCase alias is valid (and the kebab key would not be).
+      {
+        filename: fixtureFile,
+        code: `
+          import styles from './kebab.module.css';
+          const a = styles.myButton;
+        `,
+        settings: { 'css-modules-next': { localsConvention: 'asIs' } },
+        options: [{ localsConvention: 'camelCaseOnly' }],
+      },
+    ],
+    invalid: [
+      // Shared settings camelCaseOnly: the original kebab key is no longer valid.
+      {
+        filename: fixtureFile,
+        code: `
+          import styles from './kebab.module.css';
+          const a = styles["my-button"];
+        `,
+        settings: {
+          'css-modules-next': { localsConvention: 'camelCaseOnly' },
+        },
+        errors: [
+          {
+            messageId: 'undefinedClass',
+            data: {
+              className: 'my-button',
+              moduleFile: join(fixturesDir, 'kebab.module.css'),
+            },
+          },
+        ],
+      },
+      // Per-rule option (asIs) overrides shared settings (camelCase), so the
+      // camelCase alias is rejected.
+      {
+        filename: fixtureFile,
+        code: `
+          import styles from './kebab.module.css';
+          const a = styles.myButton;
+        `,
+        settings: { 'css-modules-next': { localsConvention: 'camelCase' } },
+        options: [{ localsConvention: 'asIs' }],
+        errors: [
+          {
+            messageId: 'undefinedClass',
+            data: {
+              className: 'myButton',
+              moduleFile: join(fixturesDir, 'kebab.module.css'),
+            },
+          },
+        ],
+      },
+    ],
+  });
+
   // ── localsConvention: camelCaseOnly ─────────────────────────────────────────
 
   ruleTester.run('camelCaseOnly — only camelCase keys are valid', rule, {
