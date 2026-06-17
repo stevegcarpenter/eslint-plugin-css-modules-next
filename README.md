@@ -1,6 +1,9 @@
 # eslint-plugin-css-modules-next
 
-[![CircleCI](https://dl.circleci.com/status-badge/img/gh/stevegcarpenter/eslint-plugin-css-modules-next/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/stevegcarpenter/eslint-plugin-css-modules-next/tree/main)
+[![CircleCI](https://img.shields.io/circleci/build/gh/stevegcarpenter/eslint-plugin-css-modules-next/main)](https://dl.circleci.com/status-badge/redirect/gh/stevegcarpenter/eslint-plugin-css-modules-next/tree/main)
+[![npm](https://img.shields.io/npm/v/eslint-plugin-css-modules-next)](https://www.npmjs.com/package/eslint-plugin-css-modules-next)
+[![npm](https://img.shields.io/npm/dw/eslint-plugin-css-modules-next)](https://www.npmjs.com/package/eslint-plugin-css-modules-next)
+[![license](https://img.shields.io/npm/l/eslint-plugin-css-modules-next)](https://github.com/stevegcarpenter/eslint-plugin-css-modules-next/blob/main/LICENSE)
 
 ESLint plugin for CSS Modules validation. Catches undefined and unused CSS classes, enforces co-location conventions, and disallows dynamic class access patterns that cannot be statically verified.
 
