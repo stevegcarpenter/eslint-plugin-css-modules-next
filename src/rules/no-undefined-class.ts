@@ -8,8 +8,8 @@ import { getCachedClassNames } from '../utils/css-cache';
 import { expandClassNames, resolveCssModulePath } from '../utils/css-parser';
 import {
   applyCacheSettings,
-  resolveAbsolutePaths,
   resolveLocalsConvention,
+  resolveRelativePaths,
 } from '../utils/settings';
 
 /**
@@ -41,14 +41,14 @@ const rule: Rule.RuleModule = {
     applyCacheSettings(context);
 
     const localsConvention: LocalsConvention = resolveLocalsConvention(context);
-    const absolutePaths = resolveAbsolutePaths(context);
+    const relativePaths = resolveRelativePaths(context);
 
-    // Format a CSS module path for display: absolute, or a `./`-prefixed
-    // project-relative path (default).
+    // Format a CSS module path for display: absolute (default), or a
+    // `./`-prefixed project-relative path.
     const formatModulePath = (absoluteCssPath: string): string =>
-      absolutePaths
-        ? absoluteCssPath
-        : `./${relative(context.cwd, absoluteCssPath)}`;
+      relativePaths
+        ? `./${relative(context.cwd, absoluteCssPath)}`
+        : absoluteCssPath;
 
     // Map of local import identifier → resolved CSS module file path
     const cssModuleImports = new Map<string, string>();

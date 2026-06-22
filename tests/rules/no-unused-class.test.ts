@@ -1,4 +1,4 @@
-import { dirname, join, relative } from 'path';
+import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 
 import { RuleTester } from 'eslint';
@@ -13,11 +13,10 @@ const fixturesDir = join(
 );
 const fixtureFile = join(fixturesDir, 'Button.tsx');
 
-// The rule reports CSS paths as `./`-prefixed paths relative to context.cwd,
-// which RuleTester leaves at process.cwd(); mirror that here so message
-// assertions stay environment-stable.
-const relFixture = (name: string) =>
-  `./${relative(process.cwd(), join(fixturesDir, name))}`;
+// The rule reports CSS paths as absolute filesystem paths by default. The path
+// resolves deterministically from the fixtures dir, so assertions stay
+// environment-stable.
+const absFixture = (name: string) => join(fixturesDir, name);
 
 // RuleTester.run() creates its own describe/it blocks internally, so it must
 // be called at the top level of a describe, not inside an it().
@@ -85,7 +84,7 @@ describe('no-unused-class', () => {
             messageId: 'unusedClass',
             data: {
               className: 'unused',
-              moduleFile: relFixture('button.module.css'),
+              moduleFile: absFixture('button.module.css'),
               line: '11',
               column: '1',
             },
@@ -105,7 +104,7 @@ describe('no-unused-class', () => {
             messageId: 'unusedClass',
             data: {
               className: 'unused',
-              moduleFile: relFixture('button.module.css'),
+              moduleFile: absFixture('button.module.css'),
               line: '11',
               column: '1',
             },
@@ -152,7 +151,7 @@ describe('no-unused-class', () => {
             messageId: 'unusedClass',
             data: {
               className: 'body',
-              moduleFile: relFixture('card.module.css'),
+              moduleFile: absFixture('card.module.css'),
               line: '11',
               column: '1',
             },
@@ -196,7 +195,7 @@ describe('no-unused-class', () => {
             messageId: 'unusedClass',
             data: {
               className: 'body',
-              moduleFile: relFixture('card.module.scss'),
+              moduleFile: absFixture('card.module.scss'),
               line: '10',
               column: '3',
             },
@@ -283,7 +282,7 @@ styles.localClass;`,
             messageId: 'unusedClass',
             data: {
               className: 'my-button',
-              moduleFile: relFixture('kebab.module.css'),
+              moduleFile: absFixture('kebab.module.css'),
               line: '1',
               column: '1',
             },
@@ -292,7 +291,7 @@ styles.localClass;`,
             messageId: 'unusedClass',
             data: {
               className: 'my-button--primary',
-              moduleFile: relFixture('kebab.module.css'),
+              moduleFile: absFixture('kebab.module.css'),
               line: '6',
               column: '1',
             },
@@ -346,7 +345,7 @@ styles.localClass;`,
               messageId: 'unusedClass',
               data: {
                 className: 'my-button--primary',
-                moduleFile: relFixture('kebab.module.css'),
+                moduleFile: absFixture('kebab.module.css'),
                 line: '6',
                 column: '1',
               },
@@ -355,7 +354,7 @@ styles.localClass;`,
               messageId: 'unusedClass',
               data: {
                 className: 'icon',
-                moduleFile: relFixture('kebab.module.css'),
+                moduleFile: absFixture('kebab.module.css'),
                 line: '15',
                 column: '1',
               },
@@ -401,7 +400,7 @@ styles.localClass;`,
               messageId: 'unusedClass',
               data: {
                 className: 'my-button',
-                moduleFile: relFixture('kebab.module.css'),
+                moduleFile: absFixture('kebab.module.css'),
                 line: '1',
                 column: '1',
               },
@@ -410,7 +409,7 @@ styles.localClass;`,
               messageId: 'unusedClass',
               data: {
                 className: 'my-button--primary',
-                moduleFile: relFixture('kebab.module.css'),
+                moduleFile: absFixture('kebab.module.css'),
                 line: '6',
                 column: '1',
               },
@@ -459,7 +458,7 @@ styles.localClass;`,
             messageId: 'unusedClass',
             data: {
               className: 'unused',
-              moduleFile: relFixture('button.module.css'),
+              moduleFile: absFixture('button.module.css'),
               line: '11',
               column: '1',
             },
@@ -475,7 +474,7 @@ styles.localClass;`,
             messageId: 'unusedClass',
             data: {
               className: 'button',
-              moduleFile: relFixture('button.module.css'),
+              moduleFile: absFixture('button.module.css'),
               line: '6',
               column: '1',
             },
@@ -484,7 +483,7 @@ styles.localClass;`,
             messageId: 'unusedClass',
             data: {
               className: 'unused',
-              moduleFile: relFixture('button.module.css'),
+              moduleFile: absFixture('button.module.css'),
               line: '11',
               column: '1',
             },
@@ -543,7 +542,7 @@ styles.localClass;`,
             messageId: 'unusedClass',
             data: {
               className: 'unused',
-              moduleFile: relFixture('button.module.css'),
+              moduleFile: absFixture('button.module.css'),
               line: '11',
               column: '1',
             },
@@ -569,7 +568,7 @@ styles.localClass;`,
             messageId: 'unusedClass',
             data: {
               className: 'container',
-              moduleFile: relFixture('button.module.css'),
+              moduleFile: absFixture('button.module.css'),
               line: '1',
               column: '1',
             },
@@ -578,7 +577,7 @@ styles.localClass;`,
             messageId: 'unusedClass',
             data: {
               className: 'button',
-              moduleFile: relFixture('button.module.css'),
+              moduleFile: absFixture('button.module.css'),
               line: '6',
               column: '1',
             },
@@ -587,7 +586,7 @@ styles.localClass;`,
             messageId: 'unusedClass',
             data: {
               className: 'unused',
-              moduleFile: relFixture('button.module.css'),
+              moduleFile: absFixture('button.module.css'),
               line: '11',
               column: '1',
             },

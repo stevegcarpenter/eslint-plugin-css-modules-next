@@ -8,8 +8,8 @@ import { getCachedClassLocations } from '../utils/css-cache';
 import { isClassUsed, resolveCssModulePath } from '../utils/css-parser';
 import {
   applyCacheSettings,
-  resolveAbsolutePaths,
   resolveLocalsConvention,
+  resolveRelativePaths,
 } from '../utils/settings';
 
 /**
@@ -44,7 +44,7 @@ const rule: Rule.RuleModule = {
     applyCacheSettings(context);
 
     const localsConvention: LocalsConvention = resolveLocalsConvention(context);
-    const absolutePaths = resolveAbsolutePaths(context);
+    const relativePaths = resolveRelativePaths(context);
 
     // Map CSS module path → { importNode, usedClasses }
     // Consolidates usages from member expressions, named imports, and destructuring.
@@ -145,10 +145,10 @@ const rule: Rule.RuleModule = {
           const definedClasses = getCachedClassLocations(absolutePath);
           if (!definedClasses) continue;
 
-          // Absolute path, or a `./`-prefixed project-relative path (default).
-          const moduleFile = absolutePaths
-            ? absolutePath
-            : `./${relative(context.cwd, absolutePath)}`;
+          // Absolute path (default), or a `./`-prefixed project-relative path.
+          const moduleFile = relativePaths
+            ? `./${relative(context.cwd, absolutePath)}`
+            : absolutePath;
 
           for (const [className, location] of definedClasses) {
             if (!isClassUsed(className, usedClasses, localsConvention)) {

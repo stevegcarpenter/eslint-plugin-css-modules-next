@@ -95,7 +95,7 @@ export default [
 
 ## Settings
 
-The shared `settings['css-modules-next']` block is plugin-wide configuration consumed by every rule. It currently holds three keys: `localsConvention`, `cacheSize`, and `absolutePaths`.
+The shared `settings['css-modules-next']` block is plugin-wide configuration consumed by every rule. It currently holds three keys: `localsConvention`, `cacheSize`, and `relativePaths`.
 
 ### `localsConvention` (shared)
 
@@ -142,25 +142,25 @@ Set `cacheSize: 0` to disable caching entirely (every lookup re-parses from disk
 
 Caching is a meaningful speedup since parsing is the dominant cost and scales with the number of class accesses: linting a 150-class / 150-access component (both rules enabled) benchmarks at ~31 ms/lint without caching versus ~1.6–1.8 ms/lint with it — roughly a 17–19× improvement.
 
-### `absolutePaths` (shared)
+### `relativePaths` (shared)
 
 Type: `boolean`
 Default: `false`
 
-Controls how the CSS module path is rendered in diagnostic messages. By default, paths are reported relative to the project root and prefixed with `./` (e.g. `./src/Button.module.css`), which keeps messages readable and portable. Set `absolutePaths: true` to report the full absolute filesystem path instead (e.g. `/Users/you/project/src/Button.module.css`), which some integrated terminals can resolve more reliably into clickable links:
+Controls how the CSS module path is rendered in diagnostic messages. By default, paths are reported as full absolute filesystem paths (e.g. `/Users/you/project/src/Button.module.css`), which some integrated terminals can resolve more reliably into clickable links. Set `relativePaths: true` to report a `./`-prefixed path relative to the project root instead (e.g. `./src/Button.module.css`), which keeps messages shorter and portable across machines:
 
 ```js
 // eslint.config.js
 export default [
   {
     settings: {
-      'css-modules-next': { absolutePaths: true },
+      'css-modules-next': { relativePaths: true },
     },
   },
 ];
 ```
 
-This affects message text only — it changes neither which classes are reported nor where the diagnostic is anchored. Only a strict boolean `true` enables it; any other value falls back to relative paths.
+This affects message text only — it changes neither which classes are reported nor where the diagnostic is anchored. Only a strict boolean `true` enables it; any other value falls back to absolute paths.
 
 ## Rules
 

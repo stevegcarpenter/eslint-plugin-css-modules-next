@@ -12,8 +12,8 @@ import {
 } from '../../src/utils/css-cache';
 import {
   applyCacheSettings,
-  resolveAbsolutePaths,
   resolveLocalsConvention,
+  resolveRelativePaths,
 } from '../../src/utils/settings';
 
 let dir: string;
@@ -131,19 +131,19 @@ describe('resolveLocalsConvention', () => {
   });
 });
 
-describe('resolveAbsolutePaths', () => {
-  it('defaults to false (relative paths) when nothing is configured', () => {
-    expect(resolveAbsolutePaths(contextWith({}))).toBe(false);
-    expect(resolveAbsolutePaths(contextWith(undefined))).toBe(false);
+describe('resolveRelativePaths', () => {
+  it('defaults to false (absolute paths) when nothing is configured', () => {
+    expect(resolveRelativePaths(contextWith({}))).toBe(false);
+    expect(resolveRelativePaths(contextWith(undefined))).toBe(false);
   });
 
   it('returns true when the shared setting is enabled', () => {
-    const ctx = contextWith({ 'css-modules-next': { absolutePaths: true } });
-    expect(resolveAbsolutePaths(ctx)).toBe(true);
+    const ctx = contextWith({ 'css-modules-next': { relativePaths: true } });
+    expect(resolveRelativePaths(ctx)).toBe(true);
   });
 
   it('only honours a strict boolean true (ignores truthy non-booleans)', () => {
-    const ctx = contextWith({ 'css-modules-next': { absolutePaths: 'yes' } });
-    expect(resolveAbsolutePaths(ctx)).toBe(false);
+    const ctx = contextWith({ 'css-modules-next': { relativePaths: 'yes' } });
+    expect(resolveRelativePaths(ctx)).toBe(false);
   });
 });
