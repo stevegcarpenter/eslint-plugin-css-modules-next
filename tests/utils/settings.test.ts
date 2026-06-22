@@ -12,6 +12,7 @@ import {
 } from '../../src/utils/css-cache';
 import {
   applyCacheSettings,
+  resolveAbsolutePaths,
   resolveLocalsConvention,
 } from '../../src/utils/settings';
 
@@ -127,5 +128,22 @@ describe('resolveLocalsConvention', () => {
       'css-modules-next': { localsConvention: 42 },
     });
     expect(resolveLocalsConvention(ctx)).toBe('asIs');
+  });
+});
+
+describe('resolveAbsolutePaths', () => {
+  it('defaults to false (relative paths) when nothing is configured', () => {
+    expect(resolveAbsolutePaths(contextWith({}))).toBe(false);
+    expect(resolveAbsolutePaths(contextWith(undefined))).toBe(false);
+  });
+
+  it('returns true when the shared setting is enabled', () => {
+    const ctx = contextWith({ 'css-modules-next': { absolutePaths: true } });
+    expect(resolveAbsolutePaths(ctx)).toBe(true);
+  });
+
+  it('only honours a strict boolean true (ignores truthy non-booleans)', () => {
+    const ctx = contextWith({ 'css-modules-next': { absolutePaths: 'yes' } });
+    expect(resolveAbsolutePaths(ctx)).toBe(false);
   });
 });

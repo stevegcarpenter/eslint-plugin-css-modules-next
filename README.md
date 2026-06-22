@@ -95,7 +95,7 @@ export default [
 
 ## Settings
 
-The shared `settings['css-modules-next']` block is plugin-wide configuration consumed by every rule. It currently holds two keys: `localsConvention` and `cacheSize`.
+The shared `settings['css-modules-next']` block is plugin-wide configuration consumed by every rule. It currently holds three keys: `localsConvention`, `cacheSize`, and `absolutePaths`.
 
 ### `localsConvention` (shared)
 
@@ -141,6 +141,26 @@ export default [
 Set `cacheSize: 0` to disable caching entirely (every lookup re-parses from disk). `cacheSize` is plugin-wide (shared by every rule) rather than a per-rule option, which is why it lives under `settings`. Non-numeric values are ignored. The cap only affects performance — neither eviction nor disabling changes lint results.
 
 Caching is a meaningful speedup since parsing is the dominant cost and scales with the number of class accesses: linting a 150-class / 150-access component (both rules enabled) benchmarks at ~31 ms/lint without caching versus ~1.6–1.8 ms/lint with it — roughly a 17–19× improvement.
+
+### `absolutePaths` (shared)
+
+Type: `boolean`
+Default: `false`
+
+Controls how the CSS module path is rendered in diagnostic messages. By default, paths are reported relative to the project root and prefixed with `./` (e.g. `./src/Button.module.css`), which keeps messages readable and portable. Set `absolutePaths: true` to report the full absolute filesystem path instead (e.g. `/Users/you/project/src/Button.module.css`), which some integrated terminals can resolve more reliably into clickable links:
+
+```js
+// eslint.config.js
+export default [
+  {
+    settings: {
+      'css-modules-next': { absolutePaths: true },
+    },
+  },
+];
+```
+
+This affects message text only — it changes neither which classes are reported nor where the diagnostic is anchored. Only a strict boolean `true` enables it; any other value falls back to relative paths.
 
 ## Rules
 

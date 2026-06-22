@@ -17,10 +17,11 @@ const fixturesDir = join(
 // Represents a hypothetical component file co-located with the fixtures.
 const fixtureFile = join(fixturesDir, 'Button.tsx');
 
-// The rule reports CSS paths relative to context.cwd, which RuleTester leaves at
-// process.cwd(); mirror that here so message assertions stay environment-stable.
+// The rule reports CSS paths as `./`-prefixed paths relative to context.cwd,
+// which RuleTester leaves at process.cwd(); mirror that here so message
+// assertions stay environment-stable.
 const relFixture = (name: string) =>
-  relative(process.cwd(), join(fixturesDir, name));
+  `./${relative(process.cwd(), join(fixturesDir, name))}`;
 
 // RuleTester.run() creates its own describe/it blocks internally, so it must
 // be called at the top level of a describe, not inside an it().
