@@ -13,6 +13,7 @@ import {
 import {
   applyCacheSettings,
   resolveLocalsConvention,
+  resolveRelativePaths,
 } from '../../src/utils/settings';
 
 let dir: string;
@@ -127,5 +128,22 @@ describe('resolveLocalsConvention', () => {
       'css-modules-next': { localsConvention: 42 },
     });
     expect(resolveLocalsConvention(ctx)).toBe('asIs');
+  });
+});
+
+describe('resolveRelativePaths', () => {
+  it('defaults to false (absolute paths) when nothing is configured', () => {
+    expect(resolveRelativePaths(contextWith({}))).toBe(false);
+    expect(resolveRelativePaths(contextWith(undefined))).toBe(false);
+  });
+
+  it('returns true when the shared setting is enabled', () => {
+    const ctx = contextWith({ 'css-modules-next': { relativePaths: true } });
+    expect(resolveRelativePaths(ctx)).toBe(true);
+  });
+
+  it('only honours a strict boolean true (ignores truthy non-booleans)', () => {
+    const ctx = contextWith({ 'css-modules-next': { relativePaths: 'yes' } });
+    expect(resolveRelativePaths(ctx)).toBe(false);
   });
 });

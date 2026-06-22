@@ -6,7 +6,11 @@ import type { LocalsConvention } from '../types';
 import { localsConventionSchema } from '../types';
 import { getCachedClassLocations } from '../utils/css-cache';
 import { isClassUsed, resolveCssModulePath } from '../utils/css-parser';
-import { applyCacheSettings, resolveLocalsConvention } from '../utils/settings';
+import {
+  applyCacheSettings,
+  resolveLocalsConvention,
+  resolveRelativePaths,
+} from '../utils/settings';
 
 /**
  * Reports when a CSS module file contains class definitions that are never
@@ -28,10 +32,10 @@ const rule: Rule.RuleModule = {
     },
     messages: {
       unusedClass:
-        'Class "{{className}}" in CSS module "{{moduleFile}}:{{line}}" is never used in this file.',
+        'Class "{{className}}" in CSS module {{moduleFile}}:{{line}}:{{column}} is never used in this file.',
       // Fallback for the rare case where PostCSS reports no source position.
       unusedClassUnknownLocation:
-        'Class "{{className}}" in CSS module "{{moduleFile}}" is never used in this file.',
+        'Class "{{className}}" in CSS module {{moduleFile}} is never used in this file.',
     },
     schema: localsConventionSchema,
   },
@@ -40,6 +44,7 @@ const rule: Rule.RuleModule = {
     applyCacheSettings(context);
 
     const localsConvention: LocalsConvention = resolveLocalsConvention(context);
+    const relativePaths = resolveRelativePaths(context);
 
     // Map CSS module path → { importNode, usedClasses }
     // Consolidates usages from member expressions, named imports, and destructuring.
@@ -140,8 +145,10 @@ const rule: Rule.RuleModule = {
           const definedClasses = getCachedClassLocations(absolutePath);
           if (!definedClasses) continue;
 
-          // Report the CSS path relative to the project root for readability.
-          const moduleFile = relative(context.cwd, absolutePath);
+          // Absolute path (default), or a `./`-prefixed project-relative path.
+          const moduleFile = relativePaths
+            ? `./${relative(context.cwd, absolutePath)}`
+            : absolutePath;
 
           for (const [className, location] of definedClasses) {
             if (!isClassUsed(className, usedClasses, localsConvention)) {
@@ -158,6 +165,7 @@ const rule: Rule.RuleModule = {
                       className,
                       moduleFile,
                       line: String(location.line),
+                      column: String(location.column),
                     }
                   : {
                       className,

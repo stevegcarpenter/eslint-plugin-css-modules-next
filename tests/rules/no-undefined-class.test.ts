@@ -1,4 +1,4 @@
-import { dirname, join, relative } from 'path';
+import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 
 import { RuleTester } from 'eslint';
@@ -17,10 +17,10 @@ const fixturesDir = join(
 // Represents a hypothetical component file co-located with the fixtures.
 const fixtureFile = join(fixturesDir, 'Button.tsx');
 
-// The rule reports CSS paths relative to context.cwd, which RuleTester leaves at
-// process.cwd(); mirror that here so message assertions stay environment-stable.
-const relFixture = (name: string) =>
-  relative(process.cwd(), join(fixturesDir, name));
+// The rule reports CSS paths as absolute filesystem paths by default. The path
+// resolves deterministically from the fixtures dir, so assertions stay
+// environment-stable.
+const absFixture = (name: string) => join(fixturesDir, name);
 
 // RuleTester.run() creates its own describe/it blocks internally, so it must
 // be called at the top level of a describe, not inside an it().
@@ -86,7 +86,7 @@ describe('no-undefined-class', () => {
             messageId: 'undefinedClass',
             data: {
               className: 'ghost',
-              moduleFile: relFixture('button.module.css'),
+              moduleFile: absFixture('button.module.css'),
             },
           },
         ],
@@ -103,7 +103,7 @@ describe('no-undefined-class', () => {
             messageId: 'undefinedClass',
             data: {
               className: 'ghost',
-              moduleFile: relFixture('button.module.css'),
+              moduleFile: absFixture('button.module.css'),
             },
           },
         ],
@@ -170,7 +170,7 @@ describe('no-undefined-class', () => {
             messageId: 'undefinedClass',
             data: {
               className: 'ghost',
-              moduleFile: relFixture('kebab.module.css'),
+              moduleFile: absFixture('kebab.module.css'),
             },
           },
         ],
@@ -209,7 +209,7 @@ describe('no-undefined-class', () => {
               messageId: 'undefinedClass',
               data: {
                 className: 'myButton',
-                moduleFile: relFixture('kebab.module.css'),
+                moduleFile: absFixture('kebab.module.css'),
               },
             },
           ],
@@ -248,7 +248,7 @@ describe('no-undefined-class', () => {
             messageId: 'undefinedClass',
             data: {
               className: 'ghost',
-              moduleFile: relFixture('kebab.module.css'),
+              moduleFile: absFixture('kebab.module.css'),
             },
           },
         ],
@@ -297,7 +297,7 @@ describe('no-undefined-class', () => {
             messageId: 'undefinedClass',
             data: {
               className: 'my-button',
-              moduleFile: relFixture('kebab.module.css'),
+              moduleFile: absFixture('kebab.module.css'),
             },
           },
         ],
@@ -317,7 +317,7 @@ describe('no-undefined-class', () => {
             messageId: 'undefinedClass',
             data: {
               className: 'myButton',
-              moduleFile: relFixture('kebab.module.css'),
+              moduleFile: absFixture('kebab.module.css'),
             },
           },
         ],
@@ -354,7 +354,7 @@ describe('no-undefined-class', () => {
             messageId: 'undefinedClass',
             data: {
               className: 'my-button',
-              moduleFile: relFixture('kebab.module.css'),
+              moduleFile: absFixture('kebab.module.css'),
             },
           },
         ],
@@ -400,7 +400,7 @@ describe('no-undefined-class', () => {
             messageId: 'undefinedClass',
             data: {
               className: 'ghost',
-              moduleFile: relFixture('button.module.css'),
+              moduleFile: absFixture('button.module.css'),
             },
           },
         ],
@@ -414,7 +414,7 @@ describe('no-undefined-class', () => {
             messageId: 'undefinedClass',
             data: {
               className: 'ghost',
-              moduleFile: relFixture('button.module.css'),
+              moduleFile: absFixture('button.module.css'),
             },
           },
         ],
@@ -428,7 +428,7 @@ describe('no-undefined-class', () => {
             messageId: 'undefinedClass',
             data: {
               className: 'ghost',
-              moduleFile: relFixture('button.module.css'),
+              moduleFile: absFixture('button.module.css'),
             },
           },
         ],
@@ -445,7 +445,7 @@ describe('no-undefined-class', () => {
             messageId: 'undefinedClass',
             data: {
               className: 'ghost',
-              moduleFile: relFixture('button.module.css'),
+              moduleFile: absFixture('button.module.css'),
             },
           },
         ],
@@ -472,7 +472,7 @@ describe('no-undefined-class', () => {
             messageId: 'undefinedClass',
             data: {
               className: 'ghost',
-              moduleFile: relFixture('kebab.module.css'),
+              moduleFile: absFixture('kebab.module.css'),
             },
           },
         ],

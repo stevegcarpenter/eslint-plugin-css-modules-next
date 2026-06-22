@@ -72,3 +72,19 @@ export function resolveLocalsConvention(
 
   return 'asIs';
 }
+
+/**
+ * Whether diagnostics should report CSS module paths as `./`-prefixed
+ * project-relative paths instead of the default absolute filesystem paths.
+ *
+ * Configured plugin-wide as:
+ *
+ *   settings: { 'css-modules-next': { relativePaths: true } }
+ *
+ * Defaults to `false` (absolute). Absolute paths can be more reliably resolved
+ * by some terminals into clickable links; relative paths keep messages shorter
+ * and portable across machines.
+ */
+export function resolveRelativePaths(context: Rule.RuleContext): boolean {
+  return getPluginSettings(context)?.relativePaths === true;
+}

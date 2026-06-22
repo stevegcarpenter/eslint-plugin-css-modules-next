@@ -6,7 +6,11 @@ import type { LocalsConvention } from '../types';
 import { localsConventionSchema } from '../types';
 import { getCachedClassNames } from '../utils/css-cache';
 import { expandClassNames, resolveCssModulePath } from '../utils/css-parser';
-import { applyCacheSettings, resolveLocalsConvention } from '../utils/settings';
+import {
+  applyCacheSettings,
+  resolveLocalsConvention,
+  resolveRelativePaths,
+} from '../utils/settings';
 
 /**
  * Reports when a CSS class is accessed from a CSS module import but the class
@@ -28,7 +32,7 @@ const rule: Rule.RuleModule = {
     },
     messages: {
       undefinedClass:
-        'Class "{{className}}" is not defined in CSS module "{{moduleFile}}".',
+        'Class "{{className}}" is not defined in CSS module {{moduleFile}}',
     },
     schema: localsConventionSchema,
   },
@@ -37,6 +41,14 @@ const rule: Rule.RuleModule = {
     applyCacheSettings(context);
 
     const localsConvention: LocalsConvention = resolveLocalsConvention(context);
+    const relativePaths = resolveRelativePaths(context);
+
+    // Format a CSS module path for display: absolute (default), or a
+    // `./`-prefixed project-relative path.
+    const formatModulePath = (absoluteCssPath: string): string =>
+      relativePaths
+        ? `./${relative(context.cwd, absoluteCssPath)}`
+        : absoluteCssPath;
 
     // Map of local import identifier → resolved CSS module file path
     const cssModuleImports = new Map<string, string>();
@@ -86,7 +98,7 @@ const rule: Rule.RuleModule = {
                 messageId: 'undefinedClass',
                 data: {
                   className: importedName,
-                  moduleFile: relative(context.cwd, absoluteCssPath),
+                  moduleFile: formatModulePath(absoluteCssPath),
                 },
               });
             }
@@ -122,7 +134,7 @@ const rule: Rule.RuleModule = {
             messageId: 'undefinedClass',
             data: {
               className: accessedClass,
-              moduleFile: relative(context.cwd, cssFilePath),
+              moduleFile: formatModulePath(cssFilePath),
             },
           });
         }
