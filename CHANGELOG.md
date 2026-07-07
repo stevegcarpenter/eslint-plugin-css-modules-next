@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2026-07-07
+
+### Added
+- Plugin-wide `settings['css-modules-next'].relativePaths` boolean (default `false`) to report `./`-prefixed project-relative CSS module paths in diagnostic messages instead of absolute paths (#28).
+
+### Changed
+- Diagnostic messages now report CSS module paths as absolute filesystem paths by default (previously project-relative), which integrated terminals resolve more reliably into clickable links (#28).
+- Reported paths are no longer wrapped in double quotes, so terminal linkifiers treat the `path:line:col` token cleanly (#28).
+- `no-unused-class` diagnostics now include the column alongside the line (`path:line:col`) (#28).
+- `no-undefined-class` diagnostics drop the trailing period after the path token, since the class has no line/column in the CSS file it is missing from (#28).
+
 ## [1.5.1] - 2026-06-17
 
 ### Changed
