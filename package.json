@@ -28,7 +28,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "postcss": "^8.5.8",
+    "postcss": "^8.5.28",
     "postcss-less": "^6.0.0",
     "postcss-scss": "^4.0.9"
   },
@@ -52,11 +52,11 @@
   },
   "devDependencies": {
     "@types/node": "^25.3.3",
-    "esbuild": "^0.27.3",
-    "eslint": "^10.3.0",
-    "lefthook": "^2.1.6",
+    "esbuild": "^0.28.2",
+    "eslint": "^10.10.0",
+    "lefthook": "^2.1.14",
     "oxfmt": "^0.48.0",
-    "oxlint": "^1.63.0",
+    "oxlint": "^1.83.0",
     "oxlint-tsgolint": "^0.22.1",
     "rimraf": "^6.1.3",
     "ts-node": "^10.9.2",
