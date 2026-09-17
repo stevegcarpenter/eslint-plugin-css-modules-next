@@ -55,7 +55,7 @@
     "esbuild": "^0.28.2",
     "eslint": "^10.10.0",
     "lefthook": "^2.1.14",
-    "oxfmt": "^0.48.0",
+    "oxfmt": "^0.68.0",
     "oxlint": "^1.83.0",
     "oxlint-tsgolint": "^7.0.2001",
     "rimraf": "^6.1.3",
