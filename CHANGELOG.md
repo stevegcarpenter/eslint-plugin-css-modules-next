@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.1] - 2026-09-28
+
+### Changed
+- Bumped the `postcss` runtime dependency range from `^8.5.8` to `^8.5.28` (#30).
+- Updated development tooling: TypeScript 7, Vitest 5, oxfmt 0.68, oxlint 1.83, oxlint-tsgolint 7, ESLint 10.10, esbuild 0.28, and lefthook 2.1.14. No changes to the published plugin's behaviour (#30).
+
+### Removed
+- Unused `ts-node` dev dependency and stray `tsconfig.app.json` / `tsconfig.node.json` files (#30).
+
 ## [1.6.0] - 2026-07-07
 
 ### Added
